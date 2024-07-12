@@ -80,7 +80,7 @@ public class OAuthAttributes {
                 .socialId(oauth2UserInfo.getId())
                 .email(UUID.randomUUID() + "@socialUser.com")
                 .profile(oauth2UserInfo.getImageUrl())
-                .name(oauth2UserInfo.getName())
+                .name(oauth2UserInfo.getNickname())
                 .role(Role.GUEST)
                 .build();
     }
