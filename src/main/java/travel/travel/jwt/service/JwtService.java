@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +76,7 @@ public class JwtService {
     }
 
     /**
-     * AccessToken 헤더에 실어서 보내기
+     * AccessToken 헤더에 실어서 보내기 : AccessToken 재발급
      */
     public void sendAccessToken(HttpServletResponse response, String accessToken) {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -85,7 +86,7 @@ public class JwtService {
     }
 
     /**
-     * AccessToken + RefreshToken 헤더에 실어서 보내기
+     * AccessToken + RefreshToken 헤더에 실어서 보내기 : 로그인 시 AccessToken, RefreshToken 동시 발급
      */
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
@@ -154,6 +155,7 @@ public class JwtService {
 
     /**
      * RefreshToken DB 저장(업데이트)
+     * 회원가입할 때는 RefreshToken이 발급되기 전이라 DB에 null로 들어감. 로그인 시 RefreshToken을 발급하면서 발급한 Token을 DB에 저장
      */
     public void updateRefreshToken(String email, String refreshToken) {
         userRepository.findByEmail(email)

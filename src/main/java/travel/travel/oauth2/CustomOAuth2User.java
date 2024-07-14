@@ -10,11 +10,12 @@ import java.util.Map;
 
 /**
  * DefaultOAuth2User를 상속하고, email과 role 필드를 추가로 가진다.
+ * Resource Server에서 제공하지 않는 추가 정보들을 내 서비스에서 가지고 있게 하기 위해서 만든 class
  */
 @Getter
 public class CustomOAuth2User extends DefaultOAuth2User {
 
-    private String email;
+    private String email;   // OAuth2 로그인 시 email은 JWT Token 발급을 위한 용도
     private Role role;
 
     /**

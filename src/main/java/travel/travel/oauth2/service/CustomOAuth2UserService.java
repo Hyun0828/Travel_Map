@@ -1,5 +1,6 @@
 package travel.travel.oauth2.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -62,7 +63,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 Collections.singleton(new SimpleGrantedAuthority(createdUser.getRole().getKey())),
                 attributes,
                 extractAttributes.getNameAttributeKey(),
-                createdUser.getEmail(),
+                createdUser.getOauth_email(),
                 createdUser.getRole()
         );
     }

@@ -25,32 +25,34 @@ public class User extends BaseEntity {
     @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String name;
 
+    // 프로필 이미지
     private String profile;
 
-    @Column(nullable = false)
     private LocalDate birth;
 
-    @Column(nullable = false)
     private Character gender;
 
-    @Column(nullable = false)
     private Integer age;
 
-    @Column(nullable = false)
     private String location;
 
+    // OAuth2 로그인 시 JWT 인증을 위한 email
+    private String oauth_email;
+
+    // 시큐리티 필터를 위한 Role
+    // OAuth2 로그인 시, 개인정보를 입력하지 않았다면 GUEST, 했다면 USER
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    // KAKAO, NAVER, GOOGLE
     @Enumerated(EnumType.STRING)
-    private SocialType socialType; // KAKAO, NAVER, GOOGLE
+    private SocialType socialType;
 
+    // 로그인한 소셜 타입의 식별자 값 (자체 로그인의 경우 null)
     private String socialId;
 
     private String refreshToken;

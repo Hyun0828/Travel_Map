@@ -78,9 +78,10 @@ public class OAuthAttributes {
         return User.builder()
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
-                .email(UUID.randomUUID() + "@socialUser.com")
+                .oauth_email(UUID.randomUUID() + "@socialUser.com")
                 .profile(oauth2UserInfo.getImageUrl())
                 .name(oauth2UserInfo.getNickname())
+                .email(oauth2UserInfo.getEmail())
                 .role(Role.GUEST)
                 .build();
     }
