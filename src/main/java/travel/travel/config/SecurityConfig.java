@@ -1,6 +1,7 @@
 package travel.travel.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,10 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import travel.travel.jwt.filter.JwtAuthenticationProcessingFilter;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.login.filter.CustomJsonUsernamePasswordAuthenticationFilter;
@@ -24,6 +29,9 @@ import travel.travel.oauth2.handler.OAuth2LoginFailureHandler;
 import travel.travel.oauth2.handler.OAuth2LoginSuccessHandler;
 import travel.travel.oauth2.service.CustomOAuth2UserService;
 import travel.travel.repository.UserRepository;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * 인증은 CustomJsonUsernamePasswordAuthenticationFilter에서 authenticate()로 인증된 사용자로 처리
@@ -45,6 +53,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource())) // cors 해제
                 .formLogin(config -> config.disable()) // FormLogin 사용 X
                 .httpBasic(config -> config.disable()) // httpBasic 사용 X
                 .csrf(config -> config.disable()) // csrf 보안 사용 X
@@ -53,8 +62,9 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/","/css/**","/images/**","/js/**","/favicon.ico","/h2-console/**").permitAll()
+                                .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/favicon.ico").permitAll()
                                 .requestMatchers("/sign-up").permitAll() // 회원가입 접근 가능
+                                .requestMatchers("/api/hello").permitAll() // Temporarily allow access to /api/hello
                                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -71,6 +81,20 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**CORS 설정*/
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 허용할 도메인 설정
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드 설정
+        configuration.setAllowedHeaders(Arrays.asList("*")); // 허용할 헤더 설정
+        configuration.setAllowCredentials(true); // 자격 증명 허용 여부 설정
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -82,7 +106,6 @@ public class SecurityConfig {
      * FormLogin(기존 스프링 시큐리티 로그인)과 동일하게 DaoAuthenticationProvider 사용
      * UserDetailsService는 커스텀 LoginService로 등록
      * 또한, FormLogin과 동일하게 AuthenticationManager로는 구현체인 ProviderManager 사용(return ProviderManager)
-     *
      */
     @Bean
     public AuthenticationManager authenticationManager() {
