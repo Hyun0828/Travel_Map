@@ -72,5 +72,6 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(email, password);//principal 과 credentials 전달
 
         return this.getAuthenticationManager().authenticate(authRequest);
+        // AuthenticationManager에게 인증(검증)
     }
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import travel.travel.domain.Role;
 import travel.travel.domain.SocialType;
 import travel.travel.domain.User;
+import travel.travel.domain.UserImage;
 import travel.travel.oauth2.userinfo.GoogleOAuth2UserInfo;
 import travel.travel.oauth2.userinfo.KakaoOAuth2UserInfo;
 import travel.travel.oauth2.userinfo.NaverOAuth2UserInfo;
@@ -79,7 +80,6 @@ public class OAuthAttributes {
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
                 .oauth_email(UUID.randomUUID() + "@socialUser.com")
-                .profile(oauth2UserInfo.getImageUrl())
                 .name(oauth2UserInfo.getNickname())
                 .email(oauth2UserInfo.getEmail())
                 .role(Role.GUEST)

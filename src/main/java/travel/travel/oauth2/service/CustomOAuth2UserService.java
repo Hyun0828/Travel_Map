@@ -12,8 +12,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.SocialType;
 import travel.travel.domain.User;
+import travel.travel.domain.UserImage;
 import travel.travel.oauth2.CustomOAuth2User;
 import travel.travel.oauth2.OAuthAttributes;
+import travel.travel.repository.UserImageRepository;
 import travel.travel.repository.UserRepository;
 
 import java.util.Collections;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
+    private final UserImageRepository userImageRepository;
 
     private static final String NAVER = "naver";
     private static final String KAKAO = "kakao";
@@ -98,6 +101,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
      */
     private User saveUser(OAuthAttributes attributes, SocialType socialType) {
         User createdUser = attributes.toEntity(socialType, attributes.getOauth2UserInfo());
-        return userRepository.save(createdUser);
+        userRepository.save(createdUser);
+
+        UserImage userImage = UserImage.builder()
+                .url(attributes.getOauth2UserInfo().getImageUrl())
+                .user(null)
+                .build();
+
+        userImage.setUser(createdUser);
+        userImageRepository.save(userImage);
+
+        return createdUser;
     }
 }

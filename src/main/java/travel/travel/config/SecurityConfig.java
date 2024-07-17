@@ -1,7 +1,6 @@
 package travel.travel.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +17,6 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import travel.travel.jwt.filter.JwtAuthenticationProcessingFilter;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.login.filter.CustomJsonUsernamePasswordAuthenticationFilter;
@@ -31,7 +29,6 @@ import travel.travel.oauth2.service.CustomOAuth2UserService;
 import travel.travel.repository.UserRepository;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * 인증은 CustomJsonUsernamePasswordAuthenticationFilter에서 authenticate()로 인증된 사용자로 처리
@@ -64,7 +61,6 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/favicon.ico").permitAll()
                                 .requestMatchers("/sign-up").permitAll() // 회원가입 접근 가능
-                                .requestMatchers("/api/hello").permitAll() // Temporarily allow access to /api/hello
                                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -81,7 +77,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**CORS 설정*/
+    /**
+     * CORS 설정
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

@@ -1,4 +1,4 @@
-package travel.travel.dto;
+package travel.travel.dto.user;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,6 @@ public class UserSignUpRequestDto {
     private String email;
     private String password;
     private String name;
-    private String profile;
     private LocalDate birth;
     private Character gender;
     private Integer age;

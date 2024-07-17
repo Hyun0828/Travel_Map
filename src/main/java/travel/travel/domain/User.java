@@ -29,9 +29,6 @@ public class User extends BaseEntity {
 
     private String name;
 
-    // 프로필 이미지
-    private String profile;
-
     private LocalDate birth;
 
     private Character gender;
@@ -60,6 +57,13 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "writer")
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private UserImage userImage;
+
+    public void setUserImage(UserImage userImage) {
+        this.userImage = userImage;
+    }
+
     // 유저 권한 설정 메소드
     public void authorizeUser() {
         this.role = Role.USER;
@@ -68,6 +72,11 @@ public class User extends BaseEntity {
     // 비밀번호 암호화 메소드
     public void passwordEncode(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
+    }
+
+    // 비밀번호 확인 메소드
+    public boolean checkPassword(String rawPassword, PasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(rawPassword, this.password);
     }
 
     public void updateRefreshToken(String updateRefreshToken) {

@@ -1,4 +1,4 @@
-package travel.travel.dto;
+package travel.travel.dto.user;
 
 
 import lombok.Builder;
