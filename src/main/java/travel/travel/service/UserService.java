@@ -10,6 +10,7 @@ import travel.travel.domain.UserImage;
 import travel.travel.dto.user.UserIdResponseDto;
 import travel.travel.dto.user.UserSignUpRequestDto;
 import travel.travel.jwt.service.JwtService;
+import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserImageRepository;
 import travel.travel.repository.UserRepository;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class UserService {
 
     private final JwtService jwtService;
+    private final RefreshRepository refreshRepository;
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
     private final PasswordEncoder passwordEncoder;
@@ -53,10 +55,15 @@ public class UserService {
         return UserIdResponseDto.builder().userId(user.getId()).build();
     }
 
+    /**
+     * @param accessToken
+     * 회원 탈퇴 시 DB에서 refreshToken도 전부 삭제
+     */
     public void signOut(String accessToken) {
         Optional<String> email = jwtService.extractEmail(accessToken);
-        email.ifPresent(userRepository::deleteByEmail);
+        if(email.isPresent()) {
+            userRepository.deleteByEmail(email.get());
+            refreshRepository.deleteAllByEmail(email.get());
+        }
     }
-
-
 }

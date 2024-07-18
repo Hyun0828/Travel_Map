@@ -24,7 +24,6 @@ public class ReIssueController {
 
         // 쿠키에서 Refresh token 꺼내기
         Optional<String> refreshToken = jwtService.extractRefreshToken(request);
-        System.out.println(refreshToken.get());
         if (refreshToken.isEmpty())
             return new ResponseEntity<>("RefreshToken이 없습니다", HttpStatus.BAD_REQUEST);
 
@@ -38,7 +37,6 @@ public class ReIssueController {
 
         // 새로운 accessToken, refreshToken 발급
         String email = refreshRepository.findByRefresh(refreshToken.get()).get().getEmail();
-        System.out.println(email);
         String new_accessToken = jwtService.createAccessToken(email); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
         String new_refreshToken = jwtService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
 

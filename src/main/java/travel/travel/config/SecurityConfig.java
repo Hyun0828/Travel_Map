@@ -23,6 +23,7 @@ import travel.travel.login.filter.CustomJsonUsernamePasswordAuthenticationFilter
 import travel.travel.login.handler.LoginFailureHandler;
 import travel.travel.login.handler.LoginSuccessHandler;
 import travel.travel.login.service.LoginService;
+import travel.travel.logout.CustomLogoutFilter;
 import travel.travel.oauth2.handler.OAuth2LoginFailureHandler;
 import travel.travel.oauth2.handler.OAuth2LoginSuccessHandler;
 import travel.travel.oauth2.service.CustomOAuth2UserService;
@@ -54,6 +55,7 @@ public class SecurityConfig {
         http
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource())) // cors 해제
                 .formLogin(config -> config.disable()) // FormLogin 사용 X
+                .logout(config -> config.disable())    // logout 사용 X
                 .httpBasic(config -> config.disable()) // httpBasic 사용 X
                 .csrf(config -> config.disable()) // csrf 보안 사용 X
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
@@ -73,8 +75,9 @@ public class SecurityConfig {
                 );
         // 원래 스프링 시큐리티 필터 순서가 LogoutFilter 이후에 로그인 필터 동작
         // 따라서, LogoutFilter 이후에 우리가 만든 필터 동작하도록 설정
-        // 순서 : LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
-        http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
+        // 순서 : CustomLogout -> LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
+        http.addFilterBefore(customLogoutFilter(), LogoutFilter.class);
+        http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), CustomLogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), CustomJsonUsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -152,5 +155,11 @@ public class SecurityConfig {
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
         JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository, refreshRepository);
         return jwtAuthenticationFilter;
+    }
+
+    @Bean
+    public CustomLogoutFilter customLogoutFilter() {
+        CustomLogoutFilter customLogoutFilter = new CustomLogoutFilter(jwtService, refreshRepository);
+        return customLogoutFilter;
     }
 }

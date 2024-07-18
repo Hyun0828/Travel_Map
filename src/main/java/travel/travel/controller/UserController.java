@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import travel.travel.dto.user.UserIdResponseDto;
 import travel.travel.dto.user.UserImageRequestDto;
 import travel.travel.dto.user.UserSignUpRequestDto;
+import travel.travel.repository.RefreshRepository;
 import travel.travel.service.UserService;
 
 @RestController
@@ -13,6 +14,7 @@ import travel.travel.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final RefreshRepository refreshRepository;
 
     @PostMapping("/sign-up")
     public ResponseEntity<UserIdResponseDto> signUp(@RequestBody UserSignUpRequestDto userSignUpRequestDto) throws Exception {
