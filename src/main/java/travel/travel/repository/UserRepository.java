@@ -1,5 +1,6 @@
 package travel.travel.repository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import travel.travel.domain.SocialType;
 import travel.travel.domain.User;
@@ -10,7 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByRefreshToken(String refreshToken);
+//    Optional<User> findByRefreshToken(String refreshToken);
 
     /**
      * 소셜 타입과 소셜의 식별값으로 회원 찾는 메소드
@@ -20,5 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Optional<User> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 
+    @Transactional
     void deleteByEmail(String email);
 }

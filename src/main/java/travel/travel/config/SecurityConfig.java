@@ -26,6 +26,7 @@ import travel.travel.login.service.LoginService;
 import travel.travel.oauth2.handler.OAuth2LoginFailureHandler;
 import travel.travel.oauth2.handler.OAuth2LoginSuccessHandler;
 import travel.travel.oauth2.service.CustomOAuth2UserService;
+import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserRepository;
 
 import java.util.Arrays;
@@ -42,6 +43,7 @@ public class SecurityConfig {
     private final LoginService loginService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final RefreshRepository refreshRepository;
     private final ObjectMapper objectMapper;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
@@ -61,6 +63,7 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/favicon.ico").permitAll()
                                 .requestMatchers("/sign-up").permitAll() // 회원가입 접근 가능
+                                .requestMatchers("/reissue").permitAll() // refreshToken 재발급 가능
                                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -147,7 +150,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+        JwtAuthenticationProcessingFilter jwtAuthenticationFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository, refreshRepository);
         return jwtAuthenticationFilter;
     }
 }

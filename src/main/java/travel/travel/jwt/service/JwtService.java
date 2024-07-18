@@ -2,6 +2,7 @@ package travel.travel.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import travel.travel.domain.RefreshToken;
+import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserRepository;
 
 import java.util.Date;
@@ -24,10 +27,10 @@ public class JwtService {
     private String secretKey;
 
     @Value("${jwt.access.expiration}")
-    private Long accessTokenExpirationPeriod;
+    private Integer accessTokenExpirationPeriod;
 
     @Value("${jwt.refresh.expiration}")
-    private Long refreshTokenExpirationPeriod;
+    private Integer refreshTokenExpirationPeriod;
 
     @Value("${jwt.access.header}")
     private String accessHeader;
@@ -45,6 +48,7 @@ public class JwtService {
     private static final String BEARER = "Bearer ";
 
     private final UserRepository userRepository;
+    private final RefreshRepository refreshRepository;
 
     /**
      * AccessToken 생성 메소드
@@ -85,25 +89,30 @@ public class JwtService {
     }
 
     /**
-     * AccessToken + RefreshToken 헤더에 실어서 보내기 : 로그인 시 AccessToken, RefreshToken 동시 발급
+     * AccessToken 헤더 + RefreshToken 쿠키에 실어서 보내기 : 로그인 시 AccessToken, RefreshToken 동시 발급
      */
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
 
         setAccessTokenHeader(response, accessToken);
-        setRefreshTokenHeader(response, refreshToken);
-        log.info("Access Token, Refresh Token 헤더 설정 완료");
+        setRefreshTokenCookie(response, refreshToken);
+        log.info("Access Token 헤더, Refresh Token 쿠키 설정 완료");
     }
 
     /**
-     * 헤더에서 RefreshToken 추출
+     * 쿠키에서 RefreshToken 추출
      * 토큰 형식 : Bearer XXX에서 Bearer를 제외하고 순수 토큰만 가져오기 위해서
-     * 헤더를 가져온 후 "Bearer"를 삭제(""로 replace)
+     * 쿠키를 가져온 후 "Bearer"를 삭제(""로 replace)
      */
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(refreshHeader))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""));
+        String refresh = null;
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(refreshHeader))
+                refresh = cookie.getValue();
+        }
+
+        return Optional.ofNullable(refresh);
     }
 
     /**
@@ -146,24 +155,34 @@ public class JwtService {
     }
 
     /**
-     * RefreshToken 헤더 설정
+     * RefreshToken 쿠키 설정
      */
-    public void setRefreshTokenHeader(HttpServletResponse response, String refreshToken) {
-        response.setHeader(refreshHeader, refreshToken);
+    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        response.addCookie(createCookie(refreshHeader, refreshToken));
     }
 
     /**
-     * RefreshToken DB 저장(업데이트)
-     * 회원가입할 때는 RefreshToken이 발급되기 전이라 DB에 null로 들어감. 로그인 시 RefreshToken을 발급하면서 발급한 Token을 DB에 저장
+     * 기존 RefreshToken DB에서 삭제
      */
-    public void updateRefreshToken(String email, String refreshToken) {
-        userRepository.findByEmail(email)
-                .ifPresentOrElse(
-                        user -> user.updateRefreshToken(refreshToken),
-                        () -> new Exception("일치하는 회원이 없습니다.")
-                );
+    public void deleteRefreshToken(String refreshToken) {
+        if (refreshRepository.existsByRefresh(refreshToken))
+            refreshRepository.deleteByRefresh(refreshToken);
     }
 
+    /**
+     * RefreshToken DB 저장(업데이트) - Redis가 아닌 새로운 Table에 저장
+     */
+    public void updateRefreshToken(String email, String refreshToken) {
+        refreshRepository.save(RefreshToken.builder()
+                .email(email)
+                .refresh(refreshToken)
+                .expiration(refreshTokenExpirationPeriod)
+                .build());
+    }
+
+    /**
+     * 토큰 유효성 검사
+     */
     public boolean isTokenValid(String token) {
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
@@ -172,5 +191,19 @@ public class JwtService {
             log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * 쿠키 생성
+     */
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(refreshTokenExpirationPeriod);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 }

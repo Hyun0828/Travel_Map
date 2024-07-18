@@ -52,8 +52,6 @@ public class User extends BaseEntity {
     // 로그인한 소셜 타입의 식별자 값 (자체 로그인의 경우 null)
     private String socialId;
 
-    private String refreshToken;
-
     @OneToMany(mappedBy = "writer")
     private List<Comment> comments = new ArrayList<>();
 
@@ -77,9 +75,5 @@ public class User extends BaseEntity {
     // 비밀번호 확인 메소드
     public boolean checkPassword(String rawPassword, PasswordEncoder passwordEncoder) {
         return passwordEncoder.matches(rawPassword, this.password);
-    }
-
-    public void updateRefreshToken(String updateRefreshToken) {
-        this.refreshToken = updateRefreshToken;
     }
 }
