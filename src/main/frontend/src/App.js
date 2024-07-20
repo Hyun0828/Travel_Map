@@ -1,20 +1,18 @@
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LoginPage from "./components/LoginPage";
+import KakaoRedirectPage from "./components/KakaoRedirectPage";
 
-function App() {
-  const [hello, setHello] = useState('')
-
-  useEffect(() => {
-    axios.get('http://localhost:8080/api/hello')
-        .then(response => setHello(response.data))
-        .catch(error => console.log(error))
-  }, []);
-
-  return (
-      <div>
-        백엔드에서 가져온 데이터입니다 : {hello}
-      </div>
-  );
-}
+const App = () => {
+    return (
+        <div className='App'>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<LoginPage />}></Route>
+                    <Route path="/login/oauth2/code/kakao" element={<KakaoRedirectPage />}></Route>
+                </Routes>
+            </BrowserRouter>
+        </div>
+    );
+};
 
 export default App;
