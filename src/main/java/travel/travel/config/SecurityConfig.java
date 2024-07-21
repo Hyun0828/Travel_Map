@@ -23,7 +23,7 @@ import travel.travel.login.filter.CustomJsonUsernamePasswordAuthenticationFilter
 import travel.travel.login.handler.LoginFailureHandler;
 import travel.travel.login.handler.LoginSuccessHandler;
 import travel.travel.login.service.LoginService;
-import travel.travel.logout.CustomLogoutFilter;
+import travel.travel.logout.filter.CustomLogoutFilter;
 import travel.travel.oauth2.handler.OAuth2LoginFailureHandler;
 import travel.travel.oauth2.handler.OAuth2LoginSuccessHandler;
 import travel.travel.oauth2.service.CustomOAuth2UserService;
@@ -53,7 +53,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource())) // cors 해제
+//                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource())) // cors 해제
                 .formLogin(config -> config.disable()) // FormLogin 사용 X
                 .logout(config -> config.disable())    // logout 사용 X
                 .httpBasic(config -> config.disable()) // httpBasic 사용 X
@@ -66,13 +66,15 @@ public class SecurityConfig {
                                 .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/favicon.ico").permitAll()
                                 .requestMatchers("/sign-up").permitAll() // 회원가입 접근 가능
                                 .requestMatchers("/reissue").permitAll() // refreshToken 재발급 가능
+                                .requestMatchers("/oauth/**").permitAll() // OAuth 경로 접근 가능
+                                .requestMatchers("/google-login/**").permitAll() // 구글 로그인
                                 .anyRequest().authenticated() // 위의 경로 이외에는 모두 인증된 사용자만 접근 가능
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler) // 동의하고 계속하기를 눌렀을 때 Handler 설정
-                        .failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // customUserService 설정
                 );
+//                .oauth2Login(oauth2 -> oauth2
+//                        .successHandler(oAuth2LoginSuccessHandler) // 동의하고 계속하기를 눌렀을 때 Handler 설정
+//                        .failureHandler(oAuth2LoginFailureHandler) // 소셜 로그인 실패 시 핸들러 설정
+//                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // customUserService 설정
+//                );
         // 원래 스프링 시큐리티 필터 순서가 LogoutFilter 이후에 로그인 필터 동작
         // 따라서, LogoutFilter 이후에 우리가 만든 필터 동작하도록 설정
         // 순서 : CustomLogout -> LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter

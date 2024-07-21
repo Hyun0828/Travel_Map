@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import travel.travel.domain.SocialType;
 import travel.travel.domain.User;
+import travel.travel.domain.oauth.OauthId;
 
 import java.util.Optional;
 

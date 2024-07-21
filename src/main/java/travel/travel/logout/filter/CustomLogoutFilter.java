@@ -1,4 +1,4 @@
-package travel.travel.logout;
+package travel.travel.logout.filter;
 
 
 import jakarta.servlet.FilterChain;
