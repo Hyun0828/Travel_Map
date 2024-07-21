@@ -53,6 +53,7 @@ const LoginPage = message => {
 
     return (
         <div className="login-container">
+            <h2>Recorder</h2>
             <div className="login-form">
                 <input
                     type="text"
