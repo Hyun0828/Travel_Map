@@ -3,9 +3,8 @@ package travel.travel.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import travel.travel.dto.user.UserIdResponseDto;
-import travel.travel.dto.user.UserImageRequestDto;
-import travel.travel.dto.user.UserSignUpRequestDto;
+import travel.travel.dto.user.CommonUserIdResponseDto;
+import travel.travel.dto.user.CommonUserSignUpRequestDto;
 import travel.travel.repository.RefreshRepository;
 import travel.travel.service.UserService;
 
@@ -17,9 +16,9 @@ public class UserController {
     private final RefreshRepository refreshRepository;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<UserIdResponseDto> signUp(@RequestBody UserSignUpRequestDto userSignUpRequestDto) throws Exception {
-        UserIdResponseDto userIdResponseDto = userService.signUp(userSignUpRequestDto);
-        return ResponseEntity.ok(userIdResponseDto);
+    public ResponseEntity<CommonUserIdResponseDto> signUp(@RequestBody CommonUserSignUpRequestDto commonUserSignUpRequestDto) throws Exception {
+        CommonUserIdResponseDto commonUserIdResponseDto = userService.signUp(commonUserSignUpRequestDto);
+        return ResponseEntity.ok(commonUserIdResponseDto);
     }
 
     @DeleteMapping("/sign-out")

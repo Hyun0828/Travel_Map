@@ -9,10 +9,15 @@ const NaverRedirectPage = () => {
     const handleOAuthKakao = async (code) => {
         try {
             // 네이버로부터 받아온 code를 서버에 전달하여 네이버로 회원가입 & 로그인한다
-            const response = await axios.get(`http://localhost:8080/oauth/login/naver?code=${code}`);
-            const data = response.data; // 응답 데이터
-            alert("로그인 성공: " + data)
-            navigate("/success");
+            const response = await axios.get(`http://localhost:8080/oauth/login/naver?code=${code}`, {
+                withCredentials: true // 서버에서 쿠키를 설정할 수 있도록 허용
+            });
+            const accessToken = response.headers['Authorization'] || response.headers['authorization'];
+            // AccessToken 출력
+            console.log("Access Token: " + accessToken);
+            alert("로그인 성공: " + accessToken);
+
+            // navigate("/success"); // 메인페이지로 이동
         } catch (error) {
             navigate("/fail");
         }
