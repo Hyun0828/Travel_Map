@@ -31,6 +31,6 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User writer;
 
-    @OneToMany(mappedBy = "comment")
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
     private List<CommentImage> images = new ArrayList<>();
 }

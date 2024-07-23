@@ -4,22 +4,22 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import travel.travel.domain.Role;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.UserImage;
 import travel.travel.dto.user.CommonUserIdResponseDto;
 import travel.travel.dto.user.CommonUserSignUpRequestDto;
 import travel.travel.jwt.service.JwtService;
+import travel.travel.mapper.CommonUserMapper;
+import travel.travel.repository.CommonUserRepository;
 import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserImageRepository;
-import travel.travel.repository.CommonUserRepository;
 
 import java.util.Optional;
 
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class CommonUserService {
 
     private final JwtService jwtService;
     private final RefreshRepository refreshRepository;
@@ -31,20 +31,11 @@ public class UserService {
         if (commonUserRepository.findByEmail(commonUserSignUpRequestDto.getEmail()).isPresent())
             throw new Exception("중복 이메일입니다");
 
-        CommonUser commonUser = CommonUser.builder()
-                .email(commonUserSignUpRequestDto.getEmail())
-                .password(commonUserSignUpRequestDto.getPassword())
-                .name(commonUserSignUpRequestDto.getName())
-                .birth(commonUserSignUpRequestDto.getBirth())
-                .gender(commonUserSignUpRequestDto.getGender())
-                .age(commonUserSignUpRequestDto.getAge())
-                .location(commonUserSignUpRequestDto.getLocation())
-                .role(Role.USER)
-                .build();
+        CommonUser commonUser = CommonUserMapper.toCommonUserFromCommonUserSignUpRequestDto(commonUserSignUpRequestDto);
 
         UserImage userImage = UserImage.builder()
                 .url("/saveimages/anonymous.png")
-                .commonUser(commonUser)
+                .user(commonUser)
                 .build();
 
         commonUser.setUserImage(userImage);
@@ -56,12 +47,11 @@ public class UserService {
     }
 
     /**
-     * @param accessToken
-     * 회원 탈퇴 시 DB에서 refreshToken도 전부 삭제
+     * @param accessToken 회원 탈퇴 시 DB에서 refreshToken도 전부 삭제
      */
     public void signOut(String accessToken) {
         Optional<String> email = jwtService.extractEmail(accessToken);
-        if(email.isPresent()) {
+        if (email.isPresent()) {
             commonUserRepository.deleteByEmail(email.get());
             refreshRepository.deleteAllByEmail(email.get());
         }

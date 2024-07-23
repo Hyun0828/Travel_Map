@@ -5,24 +5,24 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import travel.travel.domain.User;
-import travel.travel.repository.UserRepository;
+import travel.travel.domain.CommonUser;
+import travel.travel.repository.CommonUserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class LoginService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final CommonUserRepository commonUserRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        CommonUser commonUser = commonUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 이메일이 존재하지 않습니다."));
 
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
+                .username(commonUser.getEmail())
+                .password(commonUser.getPassword())
+                .roles(commonUser.getRole().name())
                 .build();
     }
 }

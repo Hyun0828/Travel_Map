@@ -9,10 +9,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.RefreshToken;
 import travel.travel.repository.RefreshRepository;
-import travel.travel.repository.UserRepository;
+import travel.travel.repository.CommonUserRepository;
 
 import java.util.Date;
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class JwtService {
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
 
-    private final UserRepository userRepository;
+    private final CommonUserRepository commonUserRepository;
     private final RefreshRepository refreshRepository;
 
     /**
@@ -101,8 +102,6 @@ public class JwtService {
 
     /**
      * 쿠키에서 RefreshToken 추출
-     * 토큰 형식 : Bearer XXX에서 Bearer를 제외하고 순수 토큰만 가져오기 위해서
-     * 쿠키를 가져온 후 "Bearer"를 삭제(""로 replace)
      */
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         String refresh = null;
@@ -159,6 +158,7 @@ public class JwtService {
      */
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         response.addCookie(createCookie(refreshHeader, refreshToken));
+//        response.addHeader("Set-Cookie", createCookie(refreshHeader, refreshToken).toString());
     }
 
     /**
@@ -202,8 +202,20 @@ public class JwtService {
         cookie.setMaxAge(refreshTokenExpirationPeriod);
         cookie.setSecure(true);
         cookie.setPath("/");
+        cookie.setDomain("localhost");
         cookie.setHttpOnly(true);
-
+        cookie.setAttribute("SameSite", "None");
         return cookie;
     }
+
+//    private ResponseCookie createCookie(String key, String value) {
+//        return ResponseCookie
+//                .from(key, value)
+//                .maxAge(refreshTokenExpirationPeriod)
+//                .path("/")
+//                .httpOnly(true)
+//                .secure(true)
+//                .sameSite("None")
+//                .build();
+//    }
 }

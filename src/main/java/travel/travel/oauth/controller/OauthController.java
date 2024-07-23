@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import travel.travel.domain.Role;
+import travel.travel.domain.oauth.OauthUser;
 import travel.travel.oauth.OauthServerType;
 import travel.travel.oauth.service.OauthService;
 
@@ -30,16 +32,17 @@ public class OauthController {
     ) {
         String redirectUrl = oauthService.getAuthCodeRequestUrl(oauthServerType);
         response.sendRedirect(redirectUrl);
-        System.out.println(redirectUrl);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/login/{oauthServerType}")
-    ResponseEntity<Long> login(
+    ResponseEntity<Role> login(
             @PathVariable OauthServerType oauthServerType,
-            @RequestParam("code") String code
+            @RequestParam("code") String code,
+            HttpServletResponse response
     ) {
-        Long login = oauthService.login(oauthServerType, code);
-        return ResponseEntity.ok(login);
+        OauthUser user = oauthService.login(response, oauthServerType, code);
+        oauthService.saveImage(user);
+        return ResponseEntity.ok(user.getRole());
     }
 }

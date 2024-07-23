@@ -13,10 +13,14 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
+import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
+import travel.travel.domain.oauth.OauthUser;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.jwt.util.PasswordUtil;
+import travel.travel.repository.OauthUserRepository;
 import travel.travel.repository.RefreshRepository;
+import travel.travel.repository.CommonUserRepository;
 import travel.travel.repository.UserRepository;
 
 import java.io.IOException;
@@ -41,75 +45,20 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    private final RefreshRepository refreshRepository;
 
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
+            log.debug("Request URI is /login, skipping filter.");
             filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
             return; // return으로 이후 현재 필터 진행 막기 (안 해주면 아래로 내려가서 계속 필터 진행시킴)
         }
 
-//        // 사용자 요청 헤더에서 RefreshToken 추출
-//        // RefreshToken이 없거나 유효하지 않다면(DB에 저장된 RefreshToken과 다르다면) null을 반환
-//        // 사용자의 요청 헤더에 RefreshToken이 있는 경우는, AccessToken이 만료되어 요청한 경우밖에 없다.
-//        // 따라서, 위의 경우를 제외하면 추출한 refreshToken은 모두 null
-//        String refreshToken = jwtService.extractRefreshToken(request)
-//                .filter(jwtService::isTokenValid)
-//                .orElse(null);
-//
-//        // RefreshToken이 요청 헤더에 존재했다면, 사용자가 AccessToken이 만료되어서
-//        // RefreshToken까지 보낸 것이므로 RefreshToken이 DB의 RefreshToken과 일치하는지 판단 후,
-//        // 일치한다면 AccessToken을 재발급해준다.
-//        if (refreshToken != null) {
-//            checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
-//            return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
-//        }
-//
-//        // RefreshToken이 없거나 유효하지 않다면, AccessToken을 검사하고 인증을 처리하는 로직 수행
-//        // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
-//        // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
-//        if (refreshToken == null) {
-//            checkAccessTokenAndAuthentication(request, response, filterChain);
-//        }
-
-        // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
-        // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
+        // AccessToken 체크 및 인증 처리
         checkAccessTokenAndAuthentication(request, response, filterChain);
     }
-
-    /**
-     * [RefreshToken으로 유저 정보 찾기 & AccessToken/RefreshToken 재발급 메소드]
-     * 파라미터로 들어온 헤더에서 추출한 RefreshToken으로 DB에서 유저를 찾고, 해당 유저가 있다면
-     * JwtService.createAccessToken()으로 AccessToken 생성,
-     * reIssueRefreshToken()로 RefreshToken 재발급 & DB에 RefreshToken 업데이트 메소드 호출
-     * 그 후 JwtService.sendAccessTokenAndRefreshToken()으로 응답 헤더에 보내기
-     */
-//    public void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
-//        userRepository.findByRefreshToken(refreshToken)
-//                .ifPresent(user -> {
-//                    String reIssuedRefreshToken = reIssueRefreshToken(user);
-//                    jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(user.getEmail()),
-//                            reIssuedRefreshToken);
-//                });
-//
-//        if (refreshRepository.existsByRefresh(refreshToken)) {
-//
-//        }
-//    }
-
-    /**
-     * [RefreshToken 재발급 & DB에 RefreshToken 업데이트 메소드]
-     * jwtService.createRefreshToken()으로 RefreshToken 재발급 후
-     * DB에 재발급한 RefreshToken 업데이트 후 Flush
-     */
-//    private String reIssueRefreshToken(User user) {
-//        String reIssuedRefreshToken = jwtService.createRefreshToken();
-//        jwtService.updateRefreshToken(user.getEmail(), reIssuedRefreshToken);
-//        return reIssuedRefreshToken;
-//    }
 
     /**
      * [AccessToken 체크 & 인증 처리 메소드]
@@ -146,16 +95,20 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * SecurityContextHolder.getContext()로 SecurityContext를 꺼낸 후,
      * setAuthentication()을 이용하여 위에서 만든 Authentication 객체에 대한 인증 허가 처리
      */
-    public void saveAuthentication(User myUser) {
-        String password = myUser.getPassword();
-        if (password == null) { // 소셜 로그인 유저의 비밀번호 임의로 설정 하여 소셜 로그인 유저도 인증 되도록 설정
-            password = PasswordUtil.generateRandomPassword();
-        }
+    public void saveAuthentication(User user) {
 
+        // OAuth2 로그인 유저는 password가 없다. 그래서 임의의 password를 만들어서 넣어준다.
+        String password = null;
+        if(user.getClass() == CommonUser.class)
+            password = ((CommonUser) user).getPassword();
+        else if(user.getClass() == OauthUser.class)
+            password = PasswordUtil.generateRandomPassword();
+
+        assert password != null;
         UserDetails userDetailsUser = org.springframework.security.core.userdetails.User.builder()
-                .username(myUser.getEmail())
+                .username(user.getEmail())
                 .password(password)
-                .roles(myUser.getRole().name())
+                .roles(user.getRole().name())
                 .build();
 
         Authentication authentication =

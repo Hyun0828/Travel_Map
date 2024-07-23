@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class UserIdResponseDto {
+public class CommonUserIdResponseDto {
 
     private Long userId;
 }

@@ -9,12 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CommonUserImageRequestDto {
+public class UserImageRequestDto {
 
     private MultipartFile imageFile;
 
     @Builder
-    public CommonUserImageRequestDto(MultipartFile imageFile) {
+    public UserImageRequestDto(MultipartFile imageFile) {
         this.imageFile = imageFile;
     }
 }

@@ -26,7 +26,7 @@ public record GoogleMemberResponse(
                 .email(email)
                 .name(name)
                 .profileImageUrl(picture)
-                .role(Role.USER)
+                .role(Role.GUEST)
                 .build();
     }
 }

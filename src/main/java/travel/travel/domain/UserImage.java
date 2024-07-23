@@ -20,7 +20,7 @@ public class UserImage extends BaseEntity {
     @Column(nullable = false)
     private String url;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -30,6 +30,5 @@ public class UserImage extends BaseEntity {
 
     public void setUser(User user) {
         this.user = user;
-        this.user.setUserImage(this);
     }
 }

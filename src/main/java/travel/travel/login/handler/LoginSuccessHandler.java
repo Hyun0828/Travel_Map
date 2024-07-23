@@ -9,14 +9,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import travel.travel.jwt.service.JwtService;
-import travel.travel.repository.UserRepository;
+import travel.travel.repository.CommonUserRepository;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final CommonUserRepository commonUserRepository;
 
     @Value("${jwt.access.expiration}")
     private String accessTokenExpiration;

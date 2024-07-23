@@ -3,14 +3,13 @@ package travel.travel.repository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import travel.travel.domain.SocialType;
-import travel.travel.domain.User;
-import travel.travel.domain.oauth.OauthId;
+import travel.travel.domain.CommonUser;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface CommonUserRepository extends JpaRepository<CommonUser, Long> {
 
-    Optional<User> findByEmail(String email);
+    Optional<CommonUser> findByEmail(String email);
 
 //    Optional<User> findByRefreshToken(String refreshToken);
 
@@ -20,7 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 유저 객체는 DB에 있지만, 추가 정보가 빠진 상태이다.
      * 따라서 추가 정보를 입력받아 회원 가입을 진행할 때 소셜 타입, 식별자로 해당 회원을 찾기 위한 메소드
      */
-    Optional<User> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 
     @Transactional
     void deleteByEmail(String email);

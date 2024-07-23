@@ -25,9 +25,9 @@ public record NaverMemberResponse(
                 .name(response.name)
                 .profileImageUrl(response.profileImage)
                 .email(response.email)
-                .role(Role.USER)
+                .role(Role.GUEST)
                 .age(calculateAge(response.birthyear))
-                .gender(getGenderAsCharacter(response.gender))
+                .gender(response.gender)
                 .birth(getBirthDate(response().birthyear, response.birthday))
                 .build();
     }
@@ -45,10 +45,6 @@ public record NaverMemberResponse(
             String birthyear,
             String mobile
     ) {
-    }
-
-    public Character getGenderAsCharacter(String gender) {
-        return (gender != null && !gender.isEmpty()) ? gender.charAt(0) : null;
     }
 
     public LocalDate getBirthDate(String birthyear, String birthday) {

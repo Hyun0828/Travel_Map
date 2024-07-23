@@ -6,25 +6,25 @@ import org.springframework.web.bind.annotation.*;
 import travel.travel.dto.user.CommonUserIdResponseDto;
 import travel.travel.dto.user.CommonUserSignUpRequestDto;
 import travel.travel.repository.RefreshRepository;
-import travel.travel.service.UserService;
+import travel.travel.service.CommonUserService;
 
 @RestController
 @RequiredArgsConstructor
-public class UserController {
+public class CommonUserController {
 
-    private final UserService userService;
+    private final CommonUserService commonUserService;
     private final RefreshRepository refreshRepository;
 
     @PostMapping("/sign-up")
     public ResponseEntity<CommonUserIdResponseDto> signUp(@RequestBody CommonUserSignUpRequestDto commonUserSignUpRequestDto) throws Exception {
-        CommonUserIdResponseDto commonUserIdResponseDto = userService.signUp(commonUserSignUpRequestDto);
+        CommonUserIdResponseDto commonUserIdResponseDto = commonUserService.signUp(commonUserSignUpRequestDto);
         return ResponseEntity.ok(commonUserIdResponseDto);
     }
 
     @DeleteMapping("/sign-out")
     public ResponseEntity<Void> signOut(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        userService.signOut(accessToken);
+        commonUserService.signOut(accessToken);
         return ResponseEntity.ok().build();
     }
 }
