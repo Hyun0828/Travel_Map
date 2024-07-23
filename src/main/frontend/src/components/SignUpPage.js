@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import '../css/SignUpPage.css';
+axios.defaults.withCredentials = true;
 
 const SignUpPage = () => {
     const [email, setEmail] = useState('');
@@ -91,8 +92,8 @@ const SignUpPage = () => {
                         className="signup-input"
                     >
                         <option value="">성별</option>
-                        <option value="male">남성</option>
-                        <option value="female">여성</option>
+                        <option value="M">남성</option>
+                        <option value="F">여성</option>
                     </select>
                 </div>
                 <div className="signup-field">

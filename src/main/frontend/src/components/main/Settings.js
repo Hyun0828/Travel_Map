@@ -5,7 +5,7 @@ import '../../css/OauthUserInfoPage.css';
 
 axios.defaults.withCredentials = true;
 
-const OauthUserInfoPage = () => {
+const Settings = () => {
     const accessToken = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
@@ -216,4 +216,4 @@ const OauthUserInfoPage = () => {
     );
 };
 
-export default OauthUserInfoPage;
+export default Settings;

@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios'; // axios 임포트
 import '../css/LoginPage.css'; // 별도의 CSS 파일에서 스타일을 관리할 수 있습니다.
+axios.defaults.withCredentials = true;
 
 const LoginPage = message => {
     const [email, setEmail] = useState('');
@@ -27,8 +28,6 @@ const LoginPage = message => {
             const response = await axios.post('http://localhost:8080/login', {
                 email,
                 password
-            }, {
-                headers: {}
             });
             const accessToken = response.headers['authorization'] || response.headers['Authorization'];
             // 로그인 성공 시 대시보드 페이지로 이동
@@ -37,7 +36,7 @@ const LoginPage = message => {
                 alert("로그인 성공 : " + accessToken);
                 // 예: 토큰을 로컬 스토리지에 저장하거나 상태에 저장
                 localStorage.setItem('accessToken', accessToken);
-                // navigate("/dashboard"); // 로그인 성공 시 페이지 이동
+                navigate("/main/map"); // 로그인 성공 시 페이지 이동
             } else {
                 console.error("토큰이 응답에 포함되어 있지 않습니다.");
             }
