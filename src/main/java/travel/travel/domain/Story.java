@@ -29,6 +29,9 @@ public class Story extends BaseEntity {
     @Column(nullable = false)
     private String location;
 
+    private Integer mapx;
+    private Integer mapy;
+
     @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
     private List<StoryImage> images = new ArrayList<>();
 

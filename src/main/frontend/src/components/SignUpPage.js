@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import '../css/SignUpPage.css';
+import {toast, ToastContainer} from "react-toastify";
+
 axios.defaults.withCredentials = true;
 
 const SignUpPage = () => {

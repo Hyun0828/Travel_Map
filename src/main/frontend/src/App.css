@@ -46,25 +46,16 @@
   overflow: hidden; /* Prevent scrolling */
 }
 
-.main-content .content-wrapper {
-  max-width: 600px;       /* Set maximum width */
-  width: 100%;            /* Set width to 100% */
-  padding: 20px;
-  background-color: #fff; /* Set background color */
-  box-sizing: border-box;
-  overflow: auto; /* Enable scrolling within the content wrapper if needed */
-}
-
-.login-container, .signup-container, .userinfo-container {
-  max-width: 400px;
-  margin: 10px auto;
-  padding: 20px; /* Reduced padding to ensure it fits */
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  overflow: auto; /* Enable scrolling within the container if needed */
-}
+/*.login-container, .signup-container, .userinfo-container {*/
+/*  max-width: 400px;*/
+/*  margin: 10px auto;*/
+/*  padding: 20px; !* Reduced padding to ensure it fits *!*/
+/*  border: 1px solid #ccc;*/
+/*  border-radius: 5px;*/
+/*  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
+/*  box-sizing: border-box;*/
+/*  overflow: auto; !* Enable scrolling within the container if needed *!*/
+/*}*/
 
 form div {
   margin-bottom: 15px;

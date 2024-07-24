@@ -1,0 +1,98 @@
+.diary-entry-page {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    gap: 20px; /* Gap between rows */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.top-section {
+    display: flex;
+    gap: 20px; /* Gap between left and right sections */
+}
+
+.form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1; /* Ensure both form-left and form-right take equal space */
+}
+
+.form-left {
+    /* No extra width or height settings needed */
+}
+
+.form-center {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1; /* Ensure form-center takes full width */
+}
+
+.form-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.calendar-container,
+.image-upload {
+    width: 100%; /* Ensure these take full width */
+}
+
+.image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.img-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    height: auto;
+    width: auto;
+    border: 1px solid #ddd; /* Optional border */
+}
+
+.location-search {
+    position: relative; /* Position relative to contain the dropdown */
+}
+
+#resultContainer {
+    position: absolute;
+    top: 100%; /* Position it directly below the input */
+    left: 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%; /* Full width of the parent container */
+    z-index: 1000; /* Ensure it's above other elements */
+}
+
+#resultContainer p {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    margin: 0; /* Remove default margin */
+}
+
+#resultContainer p:hover {
+    background-color: #f0f0f0;
+}
+
+.form-bottom {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}

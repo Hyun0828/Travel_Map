@@ -2,7 +2,6 @@ package travel.travel.repository;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import travel.travel.domain.SocialType;
 import travel.travel.domain.CommonUser;
 
 import java.util.Optional;
