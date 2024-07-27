@@ -1,14 +1,17 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import axios from "axios";
 import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
 import Calendar from 'react-calendar';
+import {DataContext} from '../../contexts/DataContext';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/Story.css';
 import {useNavigate} from "react-router-dom";
+import {useNavermaps} from 'react-naver-maps';
 
 axios.defaults.withCredentials = true;
 
 const Story = () => {
+    const {totalDataArray, setTotalDataArray} = useContext(DataContext);
     const [title, setTitle] = useState("");
     const [date, setDate] = useState(new Date());
     const [location, setLocation] = useState("");
@@ -18,6 +21,7 @@ const Story = () => {
     const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
+    const navermaps = useNavermaps();
     const accessToken = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
@@ -82,6 +86,10 @@ const Story = () => {
                     type: "application/json",
                 }),
             );
+
+            const roadAddress = locationObj.roadAddress;
+            const temp_title = locationObj.title.replace(/<\/?b>/g, "");
+
             try {
                 await axios.post("http://localhost:8080/story", formData, {
                     headers: {
@@ -96,6 +104,8 @@ const Story = () => {
                 setContent("");
                 setImages([]);
                 setPreviewURLs(['/images/anonymous.png']);
+
+                handleGeocode(roadAddress, temp_title);
 
                 navigate("/main/map");
             } catch (error) {
@@ -119,6 +129,46 @@ const Story = () => {
             setSearchResults([]);
         }
     }, [location]);
+
+    /**
+     * 위도, 경도 추출하고 데이터 저장
+     */
+    const handleGeocode = (roadAddress, title) => {
+        if (!navermaps || !navermaps.Service) {
+            console.error('Naver Maps service is not available');
+            return;
+        }
+
+        navermaps.Service.geocode(
+            { address: roadAddress },
+            (status, response) => {
+                if (status !== navermaps.Service.Status.OK) {
+                    console.error('Geocoding error:', status);
+                    return alert('Something went wrong during geocoding.');
+                }
+
+                const result = response.result;
+                const items = result.items;
+                if (items.length > 0) {
+                    const { x: lng, y: lat } = items[0].point;
+
+                    const newData = {
+                        dom_id: totalDataArray.length + 1,
+                        title: title,
+                        lat: lat,
+                        lng: lng
+                    };
+
+                    console.log(lat);
+                    console.log(lng);
+                    setTotalDataArray(prevArray => [...prevArray, newData]);
+                } else {
+                    console.error('No geocoding results found.');
+                    alert('No geocoding results found.');
+                }
+            }
+        );
+    };
 
     return (
         <div className="diary-entry-page">

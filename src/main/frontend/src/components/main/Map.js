@@ -1,11 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import CustomMapMarker from "./CustomMapMarker";
+import {DataContext} from "../../contexts/DataContext";
 
 const Map = () => {
+    const {totalDataArray, setTotalDataArray} = useContext(DataContext); // 추가
     const [AddressX, setAddressX] = useState(0);
     const [AddressY, setAddressY] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');
-    const [totalDataArray, setTotalDataArray] = useState([]); // 데이터 배열 상태
     const mapElement = useRef(null);
     const [newMap, setNewMap] = useState(null);
     const createMarkerList = useRef([]);     // 마커를 담을 배열
@@ -74,6 +75,8 @@ const Map = () => {
         const map = new window.naver.maps.Map(mapElement.current, mapOptions);
         setNewMap(map);
 
+        console.log("Total Data Array:", totalDataArray);
+
         // 초기 마커 추가
         new window.naver.maps.Marker({
             map: map,
@@ -83,8 +86,8 @@ const Map = () => {
         // 마커 추가
         addMarkers();
         // 검색 결과 거리순으로 재정렬
-        resetListHandler();
-    }, [AddressX, AddressY, viewportWidth]);
+        // resetListHandler();
+    }, [AddressX, AddressY, viewportWidth, totalDataArray]);
 
     /**
      * 검색 키워드 입력 처리
@@ -101,13 +104,13 @@ const Map = () => {
      */
     useEffect(() => {
         if (newMap) {
-            const MoveEventListner = window.naver.maps.Event.addListener(
+            const MoveEventListener = window.naver.maps.Event.addListener(
                 newMap,
                 'idle',
                 idleHandler
             );
             return () => {
-                window.naver.maps.Event.removeListener(MoveEventListner);
+                window.naver.maps.Event.removeListener(MoveEventListener);
             };
         }
     }, [newMap]);
@@ -120,6 +123,7 @@ const Map = () => {
      */
     useEffect(() => {
         const handleResize = () => {
+            console.log("viewportwidth : " + viewportWidth);
             setViewportWidth(window.innerWidth);
         };
         window.addEventListener('resize', handleResize);
@@ -144,6 +148,8 @@ const Map = () => {
     const updateMarkers = (map, markers) => {
         if (!map || !Array.isArray(markers)) return;
 
+        console.log("markers : ")
+        console.log(markers)
         const mapBounds = map.getBounds();
         markers.forEach(marker => {
             const position = marker.getPosition();
@@ -180,23 +186,25 @@ const Map = () => {
      */
     const addMarker = (id, name, lat, lng) => {
         try {
+            console.log(`Adding marker: id=${id}, name=${name}, lat=${lat}, lng=${lng}`);
             const newMarker = new window.naver.maps.Marker({
                 position: new window.naver.maps.LatLng(lng, lat),
                 map: newMap,
                 title: name,
                 clickable: true,
                 // 커스텀 마커
-                icon: {
-                    // html element를 반환하는 CustomMapMarker 컴포넌트 할당
-                    content: CustomMapMarker({title: name, windowWidth: viewportWidth}),
-                    // 마커의 크기 지정
-                    size: new window.naver.maps.Size(38, 58),
-                    // 마커의 기준위치 지정
-                    anchor: new window.naver.maps.Point(19, 58),
-                },
+                // icon: {
+                //     // html element를 반환하는 CustomMapMarker 컴포넌트 할당
+                //     content: CustomMapMarker({title: name, windowWidth: viewportWidth}),
+                //     // 마커의 크기 지정
+                //     size: new window.naver.maps.Size(38, 58),
+                //     // 마커의 기준위치 지정
+                //     anchor: new window.naver.maps.Point(19, 58),
+                // },
             });
             // 마커 리스트에 추가
             createMarkerList.current.push(newMarker);
+            console.log(createMarkerList)
             // 마커에 이벤트 핸들러 등록
             window.naver.maps.Event.addListener(newMarker, 'click', () =>
                 markerClickHandler(id)
@@ -241,18 +249,19 @@ const Map = () => {
             else return 0;
         });
 
-        setTotalDataArray(newArray);
+        // setSortedDomData(newArray);
     };
 
     return (
-        <div>
+        <div className="map-container">
             <form onSubmit={handleSearch}>
-                <input type="text" name="keyword" placeholder="Enter a location"/>
+                <input type="text" name="keyword" placeholder="Enter a location" />
                 <button type="submit">Search</button>
             </form>
             <button onClick={() => resetListHandler()}>
+                Reset List
             </button>
-            <div ref={mapElement} style={{width: '100%', height: '500px'}}/>
+            <div ref={mapElement} style={{ width: '100%', height: '100%' }} />
         </div>
     );
 };
