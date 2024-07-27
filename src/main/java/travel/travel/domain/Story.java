@@ -2,10 +2,12 @@ package travel.travel.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,14 +29,21 @@ public class Story extends BaseEntity {
     private String content;
 
     @Column(nullable = false)
-    private String location;
+    private String place;
+
+    @Column(nullable = false)
+    private String address;
+
+    private LocalDate date;
 
     private Integer mapx;
     private Integer mapy;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
+    @Builder.Default
     private List<StoryImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
+    @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 }

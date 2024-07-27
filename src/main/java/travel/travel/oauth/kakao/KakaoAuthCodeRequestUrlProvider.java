@@ -13,12 +13,12 @@ public class KakaoAuthCodeRequestUrlProvider implements AuthCodeRequestUrlProvid
     private final KakaoOauthConfig kakaoOauthConfig;
 
     @Override
-    public OauthServerType supportServer(){
+    public OauthServerType supportServer() {
         return OauthServerType.KAKAO;
     }
 
     @Override
-    public String provide(){
+    public String provide() {
         return UriComponentsBuilder
                 .fromUriString("https://kauth.kakao.com/oauth/authorize")
                 .queryParam("response_type", "code")

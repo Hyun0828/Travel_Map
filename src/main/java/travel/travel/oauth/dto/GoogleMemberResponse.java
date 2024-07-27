@@ -20,7 +20,7 @@ public record GoogleMemberResponse(
         String locale
 ) {
 
-    public OauthUser toDomain(){
+    public OauthUser toDomain() {
         return OauthUser.builder()
                 .oauthId(new OauthId(id, GOOGLE))
                 .email(email)

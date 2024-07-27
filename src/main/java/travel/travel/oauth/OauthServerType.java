@@ -8,7 +8,7 @@ public enum OauthServerType {
     NAVER,
     GOOGLE;
 
-    public static OauthServerType fromName(String type){
+    public static OauthServerType fromName(String type) {
         return OauthServerType.valueOf(type.toUpperCase(Locale.ENGLISH));
     }
 }

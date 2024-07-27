@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import travel.travel.domain.oauth.OauthUser;
-import travel.travel.oauth.dto.KakaoMemberResponse;
-import travel.travel.oauth.dto.KakaoToken;
 import travel.travel.oauth.OauthServerType;
 import travel.travel.oauth.client.KakaoApiClient;
 import travel.travel.oauth.client.OauthMemberClient;
+import travel.travel.oauth.dto.KakaoMemberResponse;
+import travel.travel.oauth.dto.KakaoToken;
 
 @Component
 @RequiredArgsConstructor

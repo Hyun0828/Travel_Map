@@ -32,21 +32,6 @@ public record NaverMemberResponse(
                 .build();
     }
 
-    @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record Response(
-            String id,
-            String nickname,
-            String name,
-            String email,
-            String gender,
-            String age,
-            String birthday,
-            String profileImage,
-            String birthyear,
-            String mobile
-    ) {
-    }
-
     public LocalDate getBirthDate(String birthyear, String birthday) {
         if (birthyear != null && birthday != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -66,5 +51,20 @@ public record NaverMemberResponse(
             }
         }
         return null;
+    }
+
+    @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record Response(
+            String id,
+            String nickname,
+            String name,
+            String email,
+            String gender,
+            String age,
+            String birthday,
+            String profileImage,
+            String birthyear,
+            String mobile
+    ) {
     }
 }

@@ -18,9 +18,6 @@ import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.jwt.util.PasswordUtil;
-import travel.travel.repository.OauthUserRepository;
-import travel.travel.repository.RefreshRepository;
-import travel.travel.repository.CommonUserRepository;
 import travel.travel.repository.UserRepository;
 
 import java.io.IOException;
@@ -99,9 +96,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
         // OAuth2 로그인 유저는 password가 없다. 그래서 임의의 password를 만들어서 넣어준다.
         String password = null;
-        if(user.getClass() == CommonUser.class)
+        if (user.getClass() == CommonUser.class)
             password = ((CommonUser) user).getPassword();
-        else if(user.getClass() == OauthUser.class)
+        else if (user.getClass() == OauthUser.class)
             password = PasswordUtil.generateRandomPassword();
 
         assert password != null;

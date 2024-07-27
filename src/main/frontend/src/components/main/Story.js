@@ -1,36 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import axios from "axios";
-import { Button, TextField, List, ListItem, ListItemText } from "@mui/material";
+import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/Story.css';
+import {useNavigate} from "react-router-dom";
 
 axios.defaults.withCredentials = true;
 
 const Story = () => {
     const [title, setTitle] = useState("");
     const [date, setDate] = useState(new Date());
-    const [location, setLocation] = useState(null);
+    const [location, setLocation] = useState("");
+    const [locationObj, setLocationObj] = useState(null);
     const [content, setContent] = useState("");
-    const [image, setImage] = useState({ image_file: null, preview_URL: '/images/anonymous.png' });
+    const [images, setImages] = useState([]);
+    const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
     const accessToken = localStorage.getItem('accessToken');
+    const navigate = useNavigate();
 
-    /**
-     * 네이버 검색 Api Call
-     */
     const handleSearch = async (text) => {
         if (text && typeof text === 'string' && text.trim() !== "") {
             try {
                 const response = await axios.get("http://localhost:8080/naver/search", {
-                    params: { text },
+                    params: {text},
                     headers: {
                         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
                         "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
                         Authorization: `Bearer ${accessToken}`
                     }
                 });
-                console.log("Search results:", response.data.items); // Debugging line
+                console.log("Search results:", response.data.items);
                 setSearchResults(response.data.items);
             } catch (error) {
                 console.error("Error fetching data: ", error);
@@ -41,53 +43,61 @@ const Story = () => {
         }
     };
 
-    /**
-     * 이미지 처리
-     */
     const handleImageChange = (e) => {
         e.preventDefault();
-        const fileReader = new FileReader();
-        if (e.target.files[0]) {
-            fileReader.readAsDataURL(e.target.files[0]);
-            fileReader.onload = () => {
-                setImage({ image_file: e.target.files[0], preview_URL: fileReader.result });
-            };
-        }
+        const files = Array.from(e.target.files);
+        const newPreviewURLs = files.map(file => URL.createObjectURL(file));
+        setImages(files);
+        setPreviewURLs(newPreviewURLs);
+        setCurrentImageIndex(0);
     };
 
-    /**
-     * 검색 결과 선택
-     */
     const handleResultClick = (item) => {
         if (item) {
-            setLocation(item);
+            setLocation(item.title.replace(/<\/?b>/g, ""));
+            setLocationObj(item);
         }
         setSearchResults([]);
     };
 
-    /**
-     * 일기 작성 버튼 클릭
-     */
     const handleSubmit = async () => {
-        if (location) {
+        if (locationObj) {
+            const formData = new FormData();
+
+            images.forEach((image) => {
+                formData.append('imageFiles', image);
+            });
+            const requestDto = JSON.stringify(({
+                title,
+                content,
+                place: locationObj.title.replace(/<\/?b>/g, ""),
+                address: locationObj.roadAddress,
+                date,
+                mapx: locationObj.mapx,
+                mapy: locationObj.mapy
+            }))
+
+            formData.append('requestDto', new Blob([requestDto],
+                {
+                    type: "application/json",
+                }),
+            );
             try {
-                await axios.post("/your/api/endpoint", {
-                    title,
-                    date,
-                    location: {
-                        title: location.title.replace(/<\/?b>/g, ""),
-                        address: location.address,
-                        mapx: location.mapx,
-                        mapy: location.mapy
-                    },
-                    content,
-                    image: image.image_file
+                await axios.post("http://localhost:8080/story", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${accessToken}`
+                    }
                 });
                 setTitle("");
                 setDate(new Date());
-                setLocation(null);
+                setLocation("");
+                setLocationObj(null);
                 setContent("");
-                setImage({ image_file: null, preview_URL: null });
+                setImages([]);
+                setPreviewURLs(['/images/anonymous.png']);
+
+                navigate("/main/map");
             } catch (error) {
                 console.error("Error submitting form: ", error);
             }
@@ -96,13 +106,19 @@ const Story = () => {
         }
     };
 
+    const handlePrevImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? previewURLs.length - 1 : prevIndex - 1));
+    };
+
+    const handleNextImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex === previewURLs.length - 1 ? 0 : prevIndex + 1));
+    };
 
     useEffect(() => {
         if (location && typeof location === 'string' && location.trim() === "") {
             setSearchResults([]);
         }
     }, [location]);
-
 
     return (
         <div className="diary-entry-page">
@@ -124,6 +140,7 @@ const Story = () => {
                         <input
                             type="file"
                             accept="image/*"
+                            multiple
                             onChange={handleImageChange}
                             style={{display: "none"}}
                             id="image-input"
@@ -135,14 +152,18 @@ const Story = () => {
                         >
                             😎사진 고르기😎
                         </Button>
-                        <div className="img-wrapper">
-                            {image.preview_URL && (
-                                <img
-                                    src={image.preview_URL}
-                                    alt="Preview"
-                                    className="preview-image"
-                                />
-                            )}
+                        <div className="image-preview-container">
+                            <img
+                                src={previewURLs[currentImageIndex]}
+                                alt="Preview"
+                                className="preview-image"
+                            />
+                        </div>
+                        <div className="image-nav-buttons">
+                            <Button className="nav-button" onClick={handlePrevImage}
+                                    disabled={images.length <= 1}>⬅️</Button>
+                            <Button className="nav-button" onClick={handleNextImage}
+                                    disabled={images.length <= 1}>➡️</Button>
                         </div>
                     </div>
                 </div>
@@ -160,7 +181,7 @@ const Story = () => {
                     />
                     {searchResults.length > 0 && (
                         <div id="resultContainer">
-                            {searchResults && searchResults.length > 0 ? (
+                            {searchResults.length > 0 ? (
                                 <List>
                                     {searchResults.map((item, index) => (
                                         <ListItem button key={index} onClick={() => handleResultClick(item)}>
@@ -175,7 +196,6 @@ const Story = () => {
                                 <p>No results found</p>
                             )}
                         </div>
-
                     )}
                 </div>
                 <TextField
@@ -193,7 +213,7 @@ const Story = () => {
                     color="primary"
                     onClick={handleSubmit}
                 >
-                저장하기
+                    저장하기
                 </Button>
             </div>
         </div>

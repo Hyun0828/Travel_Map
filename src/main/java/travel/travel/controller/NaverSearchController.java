@@ -17,7 +17,6 @@ public class NaverSearchController {
 
     @GetMapping(value = "/search", produces = "application/json; charset=UTF-8")
     public ResponseEntity<String> naverSearchList(@RequestParam(name = "text") String text) {
-        System.out.println(text);
         String responseBody = naverSearchService.search(text);
         return ResponseEntity.ok(responseBody);
     }
