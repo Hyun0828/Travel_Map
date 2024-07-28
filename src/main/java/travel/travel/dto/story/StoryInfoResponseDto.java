@@ -3,15 +3,15 @@ package travel.travel.dto.story;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Builder
-public class StoryCreateRequestDto {
+public class StoryInfoResponseDto {
 
     private String title;
     private String content;
     private String place;
     private String address;
-    private LocalDateTime date;
+    private LocalDate date;
 }

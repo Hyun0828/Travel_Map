@@ -36,9 +36,6 @@ public class Story extends BaseEntity {
 
     private LocalDate date;
 
-    private Integer mapx;
-    private Integer mapy;
-
     @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
     @Builder.Default
     private List<StoryImage> images = new ArrayList<>();

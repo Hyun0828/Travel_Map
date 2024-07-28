@@ -76,9 +76,7 @@ const Story = () => {
                 content,
                 place: locationObj.title.replace(/<\/?b>/g, ""),
                 address: locationObj.roadAddress,
-                date,
-                mapx: locationObj.mapx,
-                mapy: locationObj.mapy
+                date
             }))
 
             formData.append('requestDto', new Blob([requestDto],

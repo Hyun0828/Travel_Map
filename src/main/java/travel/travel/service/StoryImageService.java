@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,12 +55,13 @@ public class StoryImageService {
         }
     }
 
+    public List<String> upload(Long storyId) {
+        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
+        List<StoryImage> images = story.getImages();
+        List<String> imageUrls = new ArrayList<>();
 
-//    public String upload(String accessToken) {
-//        String email = jwtService.extractEmail(accessToken).orElseThrow(() -> new IllegalStateException("유효하지 않은 토큰입니다."));
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new NullPointerException("해당 user가 없습니다"));
-//        String imageUrl = user.getUserImage().getUrl();
-//
-//        return imageUrl.substring("/saveimages/".length());
-//    }
+        for (StoryImage image : images)
+            imageUrls.add(image.getImageUrl().substring("/saveimages/".length()));
+        return imageUrls;
+    }
 }

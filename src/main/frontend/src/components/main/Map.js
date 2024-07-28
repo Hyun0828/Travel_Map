@@ -1,6 +1,8 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import CustomMapMarker from "./CustomMapMarker";
 import {DataContext} from "../../contexts/DataContext";
+import axios from "axios";
+
+axios.defaults.withCredentials = true;
 
 const Map = () => {
     const {totalDataArray, setTotalDataArray} = useContext(DataContext); // 추가
@@ -75,13 +77,11 @@ const Map = () => {
         const map = new window.naver.maps.Map(mapElement.current, mapOptions);
         setNewMap(map);
 
-        console.log("Total Data Array:", totalDataArray);
-
         // 초기 마커 추가
-        new window.naver.maps.Marker({
-            map: map,
-            position: center,
-        });
+        // new window.naver.maps.Marker({
+        //     map: map,
+        //     position: center,
+        // });
 
         // 마커 추가
         addMarkers();
@@ -123,7 +123,6 @@ const Map = () => {
      */
     useEffect(() => {
         const handleResize = () => {
-            console.log("viewportwidth : " + viewportWidth);
             setViewportWidth(window.innerWidth);
         };
         window.addEventListener('resize', handleResize);
@@ -139,7 +138,7 @@ const Map = () => {
      * 파라미터로 새로운 지도와 마커 리스트를 준다.
      */
     const idleHandler = () => {
-        updateMarkers(newMap, createMarkerList);
+        updateMarkers(newMap, createMarkerList.current);
     };
 
     /**
@@ -148,8 +147,6 @@ const Map = () => {
     const updateMarkers = (map, markers) => {
         if (!map || !Array.isArray(markers)) return;
 
-        console.log("markers : ")
-        console.log(markers)
         const mapBounds = map.getBounds();
         markers.forEach(marker => {
             const position = marker.getPosition();
@@ -188,7 +185,7 @@ const Map = () => {
         try {
             console.log(`Adding marker: id=${id}, name=${name}, lat=${lat}, lng=${lng}`);
             const newMarker = new window.naver.maps.Marker({
-                position: new window.naver.maps.LatLng(lng, lat),
+                position: new window.naver.maps.LatLng(lat, lng),
                 map: newMap,
                 title: name,
                 clickable: true,
@@ -204,10 +201,9 @@ const Map = () => {
             });
             // 마커 리스트에 추가
             createMarkerList.current.push(newMarker);
-            console.log(createMarkerList)
             // 마커에 이벤트 핸들러 등록
             window.naver.maps.Event.addListener(newMarker, 'click', () =>
-                markerClickHandler(id)
+                markerClickHandler(id, newMap, newMarker)
             );
         } catch (e) {
             console.error('Error adding marker:', e);
@@ -215,9 +211,46 @@ const Map = () => {
     }
 
     // 마커 클릭 핸들러
-    const markerClickHandler = (id) => {
+    const markerClickHandler = async (id, map, marker) => {
         // navigate(`/ground/${id}`); // 주석을 제거하고 navigate 함수 구현
-        console.log(`Marker clicked: ${id}`);
+
+        // 일기 정보를 불러오고 contentString에 넣는다. 그리고 infoWindow에 link 하나 있어야 함
+        try {
+            const response = await axios.get('http://localhost:8080/story', {
+                params: {
+                    storyId: id
+                }
+            })
+            const storyInfo = response.data;
+            console.log(storyInfo);
+            /**
+             * storyInfo = title, content, place, address, date
+             */
+            const contentString = `
+            <div style="padding: 10px; width: 200px;">
+                <h3 style="margin-top: 0;">${storyInfo.title}</h3>
+                <p><strong>장소:</strong> ${storyInfo.place}</p>
+                <p><strong>주소:</strong> ${storyInfo.address}</p>
+                <p><strong>날짜:</strong> ${storyInfo.date}</p>
+                <p>${storyInfo.content}</p>
+                <a href="/ground/${id}" style="color: blue; text-decoration: underline;">자세히 보기</a>
+            </div>
+        `;
+            const infoWindow = new window.naver.maps.InfoWindow({
+                content: contentString,
+                maxWidth: 200
+            });
+
+            if (infoWindow.getMap())
+                infoWindow.close();
+            else
+                infoWindow.open(map, marker);
+            infoWindow.open(map, marker);
+
+        } catch (error) {
+            console.error('Error fetching story:', error);
+        }
+        // console.log(`Marker clicked: ${id}`);
     };
 
     // 마커 생성 함수
@@ -232,6 +265,10 @@ const Map = () => {
             addMarker(dom_id, title, lat, lng);
         });
     };
+
+    useEffect(() => {
+        resetListHandler();
+    }, [newMap]);
 
     // 리셋 버튼 핸들러
     const resetListHandler = () => {
@@ -255,13 +292,13 @@ const Map = () => {
     return (
         <div className="map-container">
             <form onSubmit={handleSearch}>
-                <input type="text" name="keyword" placeholder="Enter a location" />
+                <input type="text" name="keyword" placeholder="Enter a location"/>
                 <button type="submit">Search</button>
             </form>
             <button onClick={() => resetListHandler()}>
                 Reset List
             </button>
-            <div ref={mapElement} style={{ width: '100%', height: '100%' }} />
+            <div ref={mapElement} style={{width: '100%', height: '100%'}}/>
         </div>
     );
 };
