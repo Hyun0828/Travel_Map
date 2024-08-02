@@ -41,9 +41,19 @@ public class StoryController {
      * 일기 불러오기
      */
     @GetMapping("/story")
-    public ResponseEntity<StoryInfoResponseDto> upload(@RequestParam Long storyId) {
+    public ResponseEntity<StoryInfoResponseDto> upload(@RequestParam(value = "storyId") Long storyId) {
         StoryInfoResponseDto storyInfoResponseDto = storyService.upload(storyId);
         return ResponseEntity.ok(storyInfoResponseDto);
+    }
+
+    /**
+     * 모든 일기 불러오기
+     */
+    @GetMapping("/story/all")
+    public ResponseEntity<List<StoryInfoResponseDto>> getAll(@RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.replace("Bearer ", "");
+        List<StoryInfoResponseDto> storyInfoResponseDtos = storyService.getAll(accessToken);
+        return ResponseEntity.ok(storyInfoResponseDtos);
     }
 
     /**

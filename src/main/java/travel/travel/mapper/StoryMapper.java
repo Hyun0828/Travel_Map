@@ -20,7 +20,7 @@ public class StoryMapper {
         return StoryInfoResponseDto.builder()
                 .title(story.getTitle())
                 .content(story.getContent())
-                .place(story.getContent())
+                .place(story.getPlace())
                 .address(story.getAddress())
                 .date(story.getDate())
                 .build();

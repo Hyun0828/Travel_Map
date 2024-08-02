@@ -1,18 +1,85 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {DataContext} from "../../contexts/DataContext";
+import React, {useEffect, useRef, useState} from 'react';
 import axios from "axios";
+import {useNavermaps} from "react-naver-maps";
 
 axios.defaults.withCredentials = true;
 
 const Map = () => {
-    const {totalDataArray, setTotalDataArray} = useContext(DataContext); // 추가
+    const [totalDataArray, setTotalDataArray] = useState([]);
     const [AddressX, setAddressX] = useState(0);
     const [AddressY, setAddressY] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');
     const mapElement = useRef(null);
-    const [newMap, setNewMap] = useState(null);
     const createMarkerList = useRef([]);     // 마커를 담을 배열
+    const infoWindowList = useRef([]);          // 정보창을 담을 배열
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);  // 브라우저의 현재 너비
+    const navermaps = useNavermaps();
+    let idCounter = 1;
+
+    const accessToken = localStorage.getItem('accessToken');
+
+    /**
+     * DB에서 전체 일기를 가져와서 totalDataArray를 채우는 로직
+     */
+    useEffect(() => {
+        const fetchData = async () => {
+            setTotalDataArray([]);
+            idCounter = 1;
+            try {
+                const response = await axios.get("http://localhost:8080/story/all", {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                const storyInfoResponseDtos = response.data;
+
+                for (const dto of storyInfoResponseDtos) {
+                    const { address, place } = dto;
+                    await handleGeocode(address, place);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
+    /**
+     * 위도, 경도 추출하고 데이터 저장
+     */
+    const handleGeocode = (roadAddress, title) => {
+        if (!navermaps || !navermaps.Service) {
+            console.error('Naver Maps service is not available');
+            return;
+        }
+
+        navermaps.Service.geocode(
+            {address: roadAddress},
+            (status, response) => {
+                if (status !== navermaps.Service.Status.OK) {
+                    console.error('Geocoding error:', status);
+                    return alert('Something went wrong during geocoding.');
+                }
+
+                const result = response.result;
+                const items = result.items;
+                if (items.length > 0) {
+                    const {x: lng, y: lat} = items[0].point;
+
+                    const newData = {
+                        dom_id: idCounter++,
+                        title: title,
+                        lat: lat,
+                        lng: lng
+                    };
+                    setTotalDataArray(prevData => [...prevData, newData]);
+                } else {
+                    console.error('No geocoding results found.');
+                    alert('No geocoding results found.');
+                }
+            }
+        );
+    };
 
     /**
      * 사용자의 현재 위치 가져오기
@@ -74,15 +141,7 @@ const Map = () => {
         };
 
         // 지도 생성
-        const map = new window.naver.maps.Map(mapElement.current, mapOptions);
-        setNewMap(map);
-
-        // 초기 마커 추가
-        // new window.naver.maps.Marker({
-        //     map: map,
-        //     position: center,
-        // });
-
+        mapElement.current = new window.naver.maps.Map("map", mapOptions);
         // 마커 추가
         addMarkers();
         // 검색 결과 거리순으로 재정렬
@@ -103,9 +162,9 @@ const Map = () => {
      * idle : 지도 움직임이 멈추었을 때 이벤트 발생
      */
     useEffect(() => {
-        if (newMap) {
+        if (mapElement.current) {
             const MoveEventListener = window.naver.maps.Event.addListener(
-                newMap,
+                mapElement.current,
                 'idle',
                 idleHandler
             );
@@ -113,7 +172,7 @@ const Map = () => {
                 window.naver.maps.Event.removeListener(MoveEventListener);
             };
         }
-    }, [newMap]);
+    }, [mapElement.current]);
 
     /**
      * 컴포넌트가 렌더링될 때 한 번만 실행
@@ -134,12 +193,13 @@ const Map = () => {
 
 
     /**
-     * 지도가 움직이면 updateMarkers 호출
+     * 지도가 움직이다가 멈추면 updateMarkers 호출
      * 파라미터로 새로운 지도와 마커 리스트를 준다.
      */
     const idleHandler = () => {
-        updateMarkers(newMap, createMarkerList.current);
+        updateMarkers(mapElement.current, createMarkerList.current);
     };
+
 
     /**
      * 마커가 현재 보이는 영역에 있는지 확인하고 보이면 showMarker, 숨겨져 있으면 hideMarker 호출
@@ -148,7 +208,7 @@ const Map = () => {
         if (!map || !Array.isArray(markers)) return;
 
         const mapBounds = map.getBounds();
-        markers.forEach(marker => {
+        markers.forEach((marker) => {
             const position = marker.getPosition();
             if (mapBounds.hasPoint(position)) {
                 showMarker(map, marker);
@@ -178,106 +238,101 @@ const Map = () => {
         marker.setMap(null);
     };
 
+
+    const getClickHandler = (index) => {
+        return () => {
+            console.log('Marker clicked:', index);
+            console.log(infoWindowList.current[index]);
+            console.log(createMarkerList.current[index]);
+            if (infoWindowList.current[index].getMap())
+                infoWindowList.current[index].close();
+            else if (mapElement.current != null)
+                infoWindowList.current[index].open(mapElement.current, createMarkerList.current[index]);
+        }
+    };
+
     /**
      * 마커를 생성하고 createMarkerList에 추가
      */
-    const addMarker = (id, name, lat, lng) => {
+    const addMarker = async (id, name, lat, lng) => {
         try {
-            console.log(`Adding marker: id=${id}, name=${name}, lat=${lat}, lng=${lng}`);
             const newMarker = new window.naver.maps.Marker({
                 position: new window.naver.maps.LatLng(lat, lng),
-                map: newMap,
+                map: mapElement.current,
                 title: name,
                 clickable: true,
-                // 커스텀 마커
-                // icon: {
-                //     // html element를 반환하는 CustomMapMarker 컴포넌트 할당
-                //     content: CustomMapMarker({title: name, windowWidth: viewportWidth}),
-                //     // 마커의 크기 지정
-                //     size: new window.naver.maps.Size(38, 58),
-                //     // 마커의 기준위치 지정
-                //     anchor: new window.naver.maps.Point(19, 58),
-                // },
             });
-            // 마커 리스트에 추가
+
             createMarkerList.current.push(newMarker);
-            // 마커에 이벤트 핸들러 등록
-            window.naver.maps.Event.addListener(newMarker, 'click', () =>
-                markerClickHandler(id, newMap, newMarker)
-            );
-        } catch (e) {
-            console.error('Error adding marker:', e);
-        }
-    }
 
-    // 마커 클릭 핸들러
-    const markerClickHandler = async (id, map, marker) => {
-        // navigate(`/ground/${id}`); // 주석을 제거하고 navigate 함수 구현
-
-        // 일기 정보를 불러오고 contentString에 넣는다. 그리고 infoWindow에 link 하나 있어야 함
-        try {
             const response = await axios.get('http://localhost:8080/story', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                },
                 params: {
                     storyId: id
                 }
-            })
-            const storyInfo = response.data;
-            console.log(storyInfo);
-            /**
-             * storyInfo = title, content, place, address, date
-             */
-            const contentString = `
-            <div style="padding: 10px; width: 200px;">
-                <h3 style="margin-top: 0;">${storyInfo.title}</h3>
-                <p><strong>장소:</strong> ${storyInfo.place}</p>
-                <p><strong>주소:</strong> ${storyInfo.address}</p>
-                <p><strong>날짜:</strong> ${storyInfo.date}</p>
-                <p>${storyInfo.content}</p>
-                <a href="/ground/${id}" style="color: blue; text-decoration: underline;">자세히 보기</a>
-            </div>
-        `;
-            const infoWindow = new window.naver.maps.InfoWindow({
-                content: contentString,
-                maxWidth: 200
             });
 
-            if (infoWindow.getMap())
-                infoWindow.close();
-            else
-                infoWindow.open(map, marker);
-            infoWindow.open(map, marker);
+            const storyInfo = response.data;
+            const contentString = `
+                <div style="padding: 10px; width: 200px;">
+                    <h3 style="margin-top: 0;">${storyInfo.title}</h3>
+                    <p><strong>장소:</strong> ${storyInfo.place}</p>
+                    <p><strong>주소:</strong> ${storyInfo.address}</p>
+                    <p><strong>날짜:</strong> ${storyInfo.date}</p>
+                    <p>${storyInfo.content}</p>
+                    <a href="/ground/${id}" style="color: blue; text-decoration: underline;">자세히 보기</a>
+                </div>
+            `;
+
+            const infoWindow = new window.naver.maps.InfoWindow({
+                content: contentString,
+                maxWidth: 200,
+            });
+
+            infoWindowList.current.push(infoWindow);
 
         } catch (error) {
             console.error('Error fetching story:', error);
         }
-        // console.log(`Marker clicked: ${id}`);
     };
 
-    // 마커 생성 함수
+    /**
+     * 마커 생성 함수 + 마커 클릭 핸들러 설정
+     */
     const addMarkers = () => {
         if (!Array.isArray(totalDataArray) || totalDataArray.length === 0) {
             console.warn('No data available to add markers.');
             return;
         }
 
-        totalDataArray.forEach(markerObj => {
+        console.log(totalDataArray);
+        createMarkerList.current = [];
+        infoWindowList.current = [];
+
+        totalDataArray.forEach((markerObj, index) => {
             const {dom_id, title, lat, lng} = markerObj;
             addMarker(dom_id, title, lat, lng);
         });
+
+        for (let i = 0; i < createMarkerList.current.length; i++) {
+            window.naver.maps.Event.addListener(createMarkerList.current[i], "click", getClickHandler(i));
+        }
     };
 
     useEffect(() => {
         resetListHandler();
-    }, [newMap]);
+    }, [mapElement.current]);
 
     // 리셋 버튼 핸들러
     const resetListHandler = () => {
-        if (!newMap) return;
+        if (!mapElement.current) return;
         const newArray = [...totalDataArray].sort((a, b) => {
-            const currentCenterLatLng = newMap.getCenter();
+            const currentCenterLatLng = mapElement.current.getCenter();
             const LatLngA = new window.naver.maps.LatLng(a.lat, a.lng);
             const LatLngB = new window.naver.maps.LatLng(b.lat, b.lng);
-            const projection = newMap.getProjection();
+            const projection = mapElement.current.getProjection();
             const distanceA = projection.getDistance(currentCenterLatLng, LatLngA);
             const distanceB = projection.getDistance(currentCenterLatLng, LatLngB);
 
@@ -298,7 +353,7 @@ const Map = () => {
             <button onClick={() => resetListHandler()}>
                 Reset List
             </button>
-            <div ref={mapElement} style={{width: '100%', height: '100%'}}/>
+            <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}/>
         </div>
     );
 };
