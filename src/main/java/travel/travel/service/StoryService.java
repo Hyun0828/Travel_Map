@@ -4,10 +4,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.Story;
+import travel.travel.domain.Writing;
 import travel.travel.dto.story.StoryCreateRequestDto;
 import travel.travel.dto.story.StoryInfoResponseDto;
 import travel.travel.mapper.StoryMapper;
 import travel.travel.repository.StoryRepository;
+import travel.travel.repository.WritingRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ public class StoryService {
 
     private final StoryRepository storyRepository;
     private final WritingService writingService;
+    private final WritingRepository writingRepository;
 
     public Long create(String accessToken, StoryCreateRequestDto storyCreateRequestDto) {
         Story story = StoryMapper.toStoryFromStoryCreateRequestDto(storyCreateRequestDto);
@@ -32,9 +35,10 @@ public class StoryService {
     }
 
     public List<StoryInfoResponseDto> getAll(String accessToken) {
-        List<Long> storyIdList = writingService.getAllStoryId(accessToken);
+        List<Writing> writingList = writingService.getAll(accessToken);
 
-        return storyRepository.findStoriesByIdsOrdered(storyIdList).stream()
+        return writingList.stream()
+                .map(Writing::getStory)
                 .map(StoryMapper::toStoryInfoResponseDto)
                 .collect(Collectors.toList());
     }

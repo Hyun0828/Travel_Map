@@ -14,7 +14,6 @@ const Map = () => {
     const infoWindowList = useRef([]);          // 정보창을 담을 배열
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);  // 브라우저의 현재 너비
     const navermaps = useNavermaps();
-    let idCounter = 1;
 
     const accessToken = localStorage.getItem('accessToken');
 
@@ -23,8 +22,6 @@ const Map = () => {
      */
     useEffect(() => {
         const fetchData = async () => {
-            setTotalDataArray([]);
-            idCounter = 1;
             try {
                 const response = await axios.get("http://localhost:8080/story/all", {
                     headers: {
@@ -33,53 +30,58 @@ const Map = () => {
                 });
                 const storyInfoResponseDtos = response.data;
 
-                for (const dto of storyInfoResponseDtos) {
+                const geocodePromises = storyInfoResponseDtos.map((dto, index) => {
                     const { address, place } = dto;
-                    await handleGeocode(address, place);
-                }
+                    return handleGeocode(address, place, index);
+                });
+
+                const geocodeResults = await Promise.all(geocodePromises);
+                setTotalDataArray(geocodeResults);
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
         fetchData();
-    }, []);
+    }, [accessToken]);
 
-    /**
-     * 위도, 경도 추출하고 데이터 저장
-     */
-    const handleGeocode = (roadAddress, title) => {
-        if (!navermaps || !navermaps.Service) {
-            console.error('Naver Maps service is not available');
-            return;
-        }
-
-        navermaps.Service.geocode(
-            {address: roadAddress},
-            (status, response) => {
-                if (status !== navermaps.Service.Status.OK) {
-                    console.error('Geocoding error:', status);
-                    return alert('Something went wrong during geocoding.');
-                }
-
-                const result = response.result;
-                const items = result.items;
-                if (items.length > 0) {
-                    const {x: lng, y: lat} = items[0].point;
-
-                    const newData = {
-                        dom_id: idCounter++,
-                        title: title,
-                        lat: lat,
-                        lng: lng
-                    };
-                    setTotalDataArray(prevData => [...prevData, newData]);
-                } else {
-                    console.error('No geocoding results found.');
-                    alert('No geocoding results found.');
-                }
+    const handleGeocode = (roadAddress, title, index) => {
+        return new Promise((resolve, reject) => {
+            if (!navermaps || !navermaps.Service) {
+                console.error('Naver Maps service is not available');
+                return reject('Naver Maps service is not available');
             }
-        );
+
+            navermaps.Service.geocode(
+                { address: roadAddress },
+                (status, response) => {
+                    if (status !== navermaps.Service.Status.OK) {
+                        console.error('Geocoding error:', status);
+                        return reject('Something went wrong during geocoding.');
+                    }
+
+                    const result = response.result;
+                    const items = result.items;
+                    if (items.length > 0) {
+                        const { x: lng, y: lat } = items[0].point;
+
+                        const newData = {
+                            dom_id: index + 1,
+                            title: title,
+                            lat: lat,
+                            lng: lng
+                        };
+
+                        resolve(newData);
+                    } else {
+                        console.error('No geocoding results found.');
+                        reject('No geocoding results found.');
+                    }
+                }
+            );
+        });
     };
+
 
     /**
      * 사용자의 현재 위치 가져오기

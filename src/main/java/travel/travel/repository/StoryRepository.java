@@ -9,7 +9,5 @@ import java.util.List;
 
 public interface StoryRepository extends JpaRepository<Story, Long> {
 
-    @Query("SELECT s FROM Story s WHERE s.id IN :ids ORDER BY s.id ASC")
-    List<Story> findStoriesByIdsOrdered(@Param("ids") List<Long> ids);
 }
 

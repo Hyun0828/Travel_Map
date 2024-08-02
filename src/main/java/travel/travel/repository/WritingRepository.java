@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface WritingRepository extends JpaRepository<Writing, Long> {
 
-    @Query("SELECT w.story.id FROM Writing w WHERE w.writer = :user")
-    List<Long> findStoryIdsByUser(@Param("user") User user);
+    @Query("SELECT w FROM Writing w WHERE w.writer = :user ORDER BY w.story.id ASC")
+    List<Writing> findAllByWriterOrderedByStoryId(@Param("user") User user);
 }
