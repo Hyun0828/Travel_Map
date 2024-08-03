@@ -1,11 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import axios from "axios";
 import {useNavermaps} from "react-naver-maps";
+import {DataContext} from "../../contexts/DataContext";
 
 axios.defaults.withCredentials = true;
 
 const Map = () => {
-    const [totalDataArray, setTotalDataArray] = useState([]);
+    const {totalDataArray, setTotalDataArray} = useContext(DataContext);
     const [AddressX, setAddressX] = useState(0);
     const [AddressY, setAddressY] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -22,6 +23,7 @@ const Map = () => {
      */
     useEffect(() => {
         const fetchData = async () => {
+            setTotalDataArray([]);
             try {
                 const response = await axios.get("http://localhost:8080/story/all", {
                     headers: {
@@ -30,56 +32,56 @@ const Map = () => {
                 });
                 const storyInfoResponseDtos = response.data;
 
-                const geocodePromises = storyInfoResponseDtos.map((dto, index) => {
-                    const { address, place } = dto;
-                    return handleGeocode(address, place, index);
-                });
-
-                const geocodeResults = await Promise.all(geocodePromises);
-                setTotalDataArray(geocodeResults);
-
+                for (const dto of storyInfoResponseDtos) {
+                    const {id, title, content, place, address, date} = dto;
+                    await handleGeocode(id, title, content, place, address, date);
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
         fetchData();
-    }, [accessToken]);
+    }, []);
 
-    const handleGeocode = (roadAddress, title, index) => {
-        return new Promise((resolve, reject) => {
-            if (!navermaps || !navermaps.Service) {
-                console.error('Naver Maps service is not available');
-                return reject('Naver Maps service is not available');
-            }
+    /**
+     * 위도, 경도 추출하고 데이터 저장
+     */
+    const handleGeocode = (id, title, content, place, address, date) => {
+        if (!navermaps || !navermaps.Service) {
+            console.error('Naver Maps service is not available');
+            return;
+        }
 
-            navermaps.Service.geocode(
-                { address: roadAddress },
-                (status, response) => {
-                    if (status !== navermaps.Service.Status.OK) {
-                        console.error('Geocoding error:', status);
-                        return reject('Something went wrong during geocoding.');
-                    }
-
-                    const result = response.result;
-                    const items = result.items;
-                    if (items.length > 0) {
-                        const { x: lng, y: lat } = items[0].point;
-
-                        const newData = {
-                            dom_id: index + 1,
-                            title: title,
-                            lat: lat,
-                            lng: lng
-                        };
-
-                        resolve(newData);
-                    } else {
-                        console.error('No geocoding results found.');
-                        reject('No geocoding results found.');
-                    }
+        navermaps.Service.geocode(
+            {address: address},
+            (status, response) => {
+                if (status !== navermaps.Service.Status.OK) {
+                    console.error('Geocoding error:', status);
+                    return alert('Something went wrong during geocoding.');
                 }
-            );
-        });
+
+                const result = response.result;
+                const items = result.items;
+                if (items.length > 0) {
+                    const {x: lng, y: lat} = items[0].point;
+
+                    const newData = {
+                        dom_id: id,
+                        title: title,
+                        content: content,
+                        place: place,
+                        address: address,
+                        date: date,
+                        lat: lat,
+                        lng: lng
+                    };
+                    setTotalDataArray(prevData => [...prevData, newData]);
+                } else {
+                    console.error('No geocoding results found.');
+                    alert('No geocoding results found.');
+                }
+            }
+        );
     };
 
 
@@ -256,41 +258,80 @@ const Map = () => {
     /**
      * 마커를 생성하고 createMarkerList에 추가
      */
-    const addMarker = async (id, name, lat, lng) => {
+    const addMarker = async (dom_id, title, content, place, address, date, lat, lng) => {
         try {
             const newMarker = new window.naver.maps.Marker({
                 position: new window.naver.maps.LatLng(lat, lng),
                 map: mapElement.current,
-                title: name,
+                title: place,
                 clickable: true,
             });
-
             createMarkerList.current.push(newMarker);
 
-            const response = await axios.get('http://localhost:8080/story', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                },
-                params: {
-                    storyId: id
-                }
-            });
-
-            const storyInfo = response.data;
             const contentString = `
-                <div style="padding: 10px; width: 200px;">
-                    <h3 style="margin-top: 0;">${storyInfo.title}</h3>
-                    <p><strong>장소:</strong> ${storyInfo.place}</p>
-                    <p><strong>주소:</strong> ${storyInfo.address}</p>
-                    <p><strong>날짜:</strong> ${storyInfo.date}</p>
-                    <p>${storyInfo.content}</p>
-                    <a href="/ground/${id}" style="color: blue; text-decoration: underline;">자세히 보기</a>
-                </div>
+                            <div style="
+                padding: 15px;
+                width: 250px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background-color: #f9f9f9;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            ">
+                <h3 style="
+                    margin-top: 0;
+                    font-size: 1.2em;
+                    color: #333;
+                    font-family: 'Arial', sans-serif;
+                ">${title}</h3>
+                
+                <p style="
+                    margin: 5px 0;
+                    font-size: 0.9em;
+                    color: #555;
+                    font-family: 'Arial', sans-serif;
+                "><strong>장소:</strong> ${place}</p>
+                
+                <p style="
+                    margin: 5px 0;
+                    font-size: 0.9em;
+                    color: #555;
+                    font-family: 'Arial', sans-serif;
+                "><strong>주소:</strong> ${address}</p>
+                
+                <p style="
+                    margin: 5px 0;
+                    font-size: 0.9em;
+                    color: #555;
+                    font-family: 'Arial', sans-serif;
+                "><strong>날짜:</strong> ${date}</p>
+                
+                <p style="
+                    margin: 10px 0;
+                    font-size: 0.9em;
+                    color: #333;
+                    font-family: 'Arial', sans-serif;
+                ">${content}</p>
+                
+                <a href="/ground/${dom_id}" style="
+                    display: inline-block;
+                    padding: 8px 12px;
+                    margin-top: 10px;
+                    font-size: 0.9em;
+                    color: #007bff;
+                    text-decoration: none;
+                    border-radius: 4px;
+                    border: 1px solid #007bff;
+                    background-color: #ffffff;
+                    transition: background-color 0.3s, color 0.3s;
+                " onmouseover="this.style.backgroundColor='#007bff'; this.style.color='#ffffff';" onmouseout="this.style.backgroundColor='#ffffff'; this.style.color='#007bff';">
+                    자세히 보기
+                </a>
+            </div>
             `;
 
             const infoWindow = new window.naver.maps.InfoWindow({
                 content: contentString,
-                maxWidth: 200,
+                maxWidth: 300,
             });
 
             infoWindowList.current.push(infoWindow);
@@ -309,13 +350,12 @@ const Map = () => {
             return;
         }
 
-        console.log(totalDataArray);
         createMarkerList.current = [];
         infoWindowList.current = [];
 
-        totalDataArray.forEach((markerObj, index) => {
-            const {dom_id, title, lat, lng} = markerObj;
-            addMarker(dom_id, title, lat, lng);
+        totalDataArray.forEach((markerObj) => {
+            const {dom_id, title, content, place, address, date, lat, lng} = markerObj;
+            addMarker(dom_id, title, content, place, address, date, lat, lng);
         });
 
         for (let i = 0; i < createMarkerList.current.length; i++) {

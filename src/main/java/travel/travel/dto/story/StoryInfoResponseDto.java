@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Builder
 public class StoryInfoResponseDto {
 
+    private Long id;
     private String title;
     private String content;
     private String place;

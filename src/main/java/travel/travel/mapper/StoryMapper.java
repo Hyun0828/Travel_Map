@@ -18,6 +18,7 @@ public class StoryMapper {
 
     public static StoryInfoResponseDto toStoryInfoResponseDto(Story story) {
         return StoryInfoResponseDto.builder()
+                .id(story.getId())
                 .title(story.getTitle())
                 .content(story.getContent())
                 .place(story.getPlace())
