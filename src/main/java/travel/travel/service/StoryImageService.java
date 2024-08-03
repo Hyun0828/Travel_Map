@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import travel.travel.domain.Story;
 import travel.travel.domain.StoryImage;
+import travel.travel.domain.User;
+import travel.travel.jwt.service.JwtService;
 import travel.travel.repository.StoryImageRepository;
 import travel.travel.repository.StoryRepository;
 import travel.travel.repository.UserRepository;
@@ -26,6 +28,7 @@ public class StoryImageService {
     private final StoryRepository storyRepository;
     private final StoryImageRepository storyImageRepository;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @Transactional
     public void update(Long storyId, List<MultipartFile> imageFiles) throws IOException {
@@ -48,14 +51,24 @@ public class StoryImageService {
                     StoryImage storyImage = StoryImage.builder()
                             .imageUrl("/saveimages/" + fileName)
                             .build();
-                    storyImage.setStory(story);
+                    story.addImage(storyImage);
                     StoryImage savedStoryImage = storyImageRepository.save(storyImage);
                 }
             }
         }
     }
 
-    public List<String> upload(Long storyId) {
+    public String uploadImage(Long storyId) {
+        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
+
+        if(!story.getImages().isEmpty()) {
+            String imageUrl = story.getImages().get(0).getImageUrl();
+            return imageUrl.substring("/saveimages/".length());
+        }else
+            return "markerIcon.png";
+    }
+
+    public List<String> uploadImages(Long storyId) {
         Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
         List<StoryImage> images = story.getImages();
         List<String> imageUrls = new ArrayList<>();

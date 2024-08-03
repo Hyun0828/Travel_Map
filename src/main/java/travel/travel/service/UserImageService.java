@@ -51,7 +51,6 @@ public class UserImageService {
         }
     }
 
-
     public String upload(String accessToken) {
         String email = jwtService.extractEmail(accessToken).orElseThrow(() -> new IllegalStateException("유효하지 않은 토큰입니다."));
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NullPointerException("해당 user가 없습니다"));

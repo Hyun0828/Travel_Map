@@ -4,6 +4,7 @@ import Map from './Map';
 import Settings from './Settings';
 import Calendar from './Calendar';
 import Story from "./Story";
+import StoryList from "./StoryList"
 
 const MainContent = () => {
 
@@ -11,6 +12,7 @@ const MainContent = () => {
         <div className="main-content">
             <Routes>
                 <Route path="/map" element={<Map/>}/>
+                <Route path="/storyList" element={<StoryList/>}/>
                 <Route path="/story" element={<Story/>}/>
                 <Route path="/calendar" element={<Calendar/>}/>
                 <Route path="/settings" element={<Settings/>}/>

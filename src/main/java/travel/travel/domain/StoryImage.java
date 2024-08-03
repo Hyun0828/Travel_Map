@@ -5,6 +5,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -21,9 +22,4 @@ public class StoryImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "story_id")
     private Story story;
-
-    public void setStory(Story story) {
-        this.story = story;
-        story.getImages().add(this);
-    }
 }

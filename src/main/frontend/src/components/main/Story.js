@@ -61,6 +61,11 @@ const Story = () => {
     };
 
     const handleSubmit = async () => {
+        if (!title || !location || !content) {
+            alert("모든 필드를 입력해주세요.");
+            return;
+        }
+
         if (locationObj) {
             const formData = new FormData();
 
@@ -73,16 +78,11 @@ const Story = () => {
                 place: locationObj.title.replace(/<\/?b>/g, ""),
                 address: locationObj.roadAddress,
                 date
-            }))
+            }));
 
-            formData.append('requestDto', new Blob([requestDto],
-                {
-                    type: "application/json",
-                }),
-            );
-
-            const roadAddress = locationObj.roadAddress;
-            const temp_title = locationObj.title.replace(/<\/?b>/g, "");
+            formData.append('requestDto', new Blob([requestDto], {
+                type: "application/json",
+            }));
 
             try {
                 await axios.post("http://localhost:8080/story", formData, {
@@ -105,6 +105,7 @@ const Story = () => {
             }
         } else {
             console.error("No location selected");
+            alert("지역을 선택해주세요.");
         }
     };
 
