@@ -2,6 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 import axios from "axios";
 import {useNavermaps} from "react-naver-maps";
 import {DataContext} from "../../contexts/DataContext";
+import "../../css/Map.css";
 
 axios.defaults.withCredentials = true;
 
@@ -392,9 +393,9 @@ const Map = () => {
                 <input type="text" name="keyword" placeholder="Enter a location"/>
                 <button type="submit">Search</button>
             </form>
-            <button onClick={() => resetListHandler()}>
-                Reset List
-            </button>
+            {/*<button onClick={() => resetListHandler()}>*/}
+            {/*    Reset List*/}
+            {/*</button>*/}
             <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}/>
         </div>
     );

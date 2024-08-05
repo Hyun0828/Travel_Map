@@ -1,0 +1,7 @@
+.map-container {
+    opacity: 0;
+    animation: smoothAppear 1.5s forwards;
+    animation-delay: 0.5s;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+}

@@ -1,225 +1,145 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button, Dialog, DialogContent, IconButton } from "@mui/material";
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
+import DisabledByDefaultOutlinedIcon from '@mui/icons-material/DisabledByDefaultOutlined';
 import axios from "axios";
-import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import '../../css/Story.css';
-import {useNavigate} from "react-router-dom";
+import "../../css/Story.scss";
 
 axios.defaults.withCredentials = true;
 
 const Story = () => {
-    const [title, setTitle] = useState("");
-    const [date, setDate] = useState(new Date());
-    const [location, setLocation] = useState("");
-    const [locationObj, setLocationObj] = useState(null);
-    const [content, setContent] = useState("");
+
+    const { story_id } = useParams();
+    const [story, setStory] = useState({});
     const [images, setImages] = useState([]);
-    const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [searchResults, setSearchResults] = useState([]);
-    const accessToken = localStorage.getItem('accessToken');
+    const [isLoaded, setIsLoaded] = useState(false);
     const navigate = useNavigate();
+    const accessToken = localStorage.getItem('accessToken');
+    const [show, setShow] = useState(false);
 
-    const handleSearch = async (text) => {
-        if (text && typeof text === 'string' && text.trim() !== "") {
-            try {
-                const response = await axios.get("http://localhost:8080/naver/search", {
-                    params: {text},
-                    headers: {
-                        "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
-                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
-                console.log("Search results:", response.data.items);
-                setSearchResults(response.data.items);
-            } catch (error) {
-                console.error("Error fetching data: ", error);
-                setSearchResults([]);
-            }
-        } else {
-            setSearchResults([]);
-        }
-    };
-
-    const handleImageChange = (e) => {
-        e.preventDefault();
-        const files = Array.from(e.target.files);
-        const newPreviewURLs = files.map(file => URL.createObjectURL(file));
-        setImages(files);
-        setPreviewURLs(newPreviewURLs);
-        setCurrentImageIndex(0);
-    };
-
-    const handleResultClick = (item) => {
-        if (item) {
-            setLocation(item.title.replace(/<\/?b>/g, ""));
-            setLocationObj(item);
-        }
-        setSearchResults([]);
-    };
-
-    const handleSubmit = async () => {
-        if (!title || !location || !content) {
-            alert("모든 필드를 입력해주세요.");
-            return;
-        }
-
-        if (locationObj) {
-            const formData = new FormData();
-
-            images.forEach((image) => {
-                formData.append('imageFiles', image);
+    useEffect(() => {
+        const getStory = async () => {
+            const response = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
             });
-            const requestDto = JSON.stringify(({
-                title,
-                content,
-                place: locationObj.title.replace(/<\/?b>/g, ""),
-                address: locationObj.roadAddress,
-                date
-            }));
+            return response.data;
+        };
 
-            formData.append('requestDto', new Blob([requestDto], {
-                type: "application/json",
-            }));
+        const getImages = async () => {
+            const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            const imageUrls = response.data;
 
-            try {
-                await axios.post("http://localhost:8080/story", formData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
-                setTitle("");
-                setDate(new Date());
-                setLocation("");
-                setLocationObj(null);
-                setContent("");
-                setImages([]);
-                setPreviewURLs(['/images/anonymous.png']);
+            console.log(imageUrls);
 
-                navigate("/main/map");
-            } catch (error) {
-                console.error("Error submitting form: ", error);
-            }
-        } else {
-            console.error("No location selected");
-            alert("지역을 선택해주세요.");
-        }
+            const imagePromises = imageUrls.map(async (imageUrl) => {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            });
+
+            return Promise.all(imagePromises);
+        };
+
+        getStory().then(result => setStory(result)).then(() => setIsLoaded(true));
+        getImages().then(imageUrls => setImages(imageUrls));
+    }, [story_id, accessToken]);
+
+    const handleNextImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
     };
 
     const handlePrevImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? previewURLs.length - 1 : prevIndex - 1));
+        setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
     };
-
-    const handleNextImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === previewURLs.length - 1 ? 0 : prevIndex + 1));
-    };
-
-    useEffect(() => {
-        if (location && typeof location === 'string' && location.trim() === "") {
-            setSearchResults([]);
-        }
-    }, [location]);
 
     return (
-        <div className="diary-entry-page">
-            <div className="top-section">
-                <div className="form-left">
-                    <TextField
-                        label="제목"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        fullWidth
-                    />
-                    <Calendar
-                        value={date}
-                        onChange={setDate}
-                    />
+        <React.Fragment>
+            <div className="story-wrapper">
+                <div className="edit-delete-button">
+                    <Button
+                        variant="outlined" color="error" endIcon={<DeleteForeverOutlinedIcon />}
+                        className="delete-button"
+                        onClick={() => {
+                            setShow(true);
+                        }}
+                    >
+                        삭제
+                    </Button>
+                    <Button
+                        variant="outlined" endIcon={<BuildOutlinedIcon />}
+                        onClick={() => {
+                            navigate(`/edit-story/${story_id}`);
+                        }}
+                    >
+                        수정
+                    </Button>
                 </div>
-                <div className="form-right">
-                    <div className="image-upload">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={handleImageChange}
-                            style={{display: "none"}}
-                            id="image-input"
-                        />
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => document.getElementById("image-input").click()}
-                        >
-                            😎사진 고르기😎
-                        </Button>
-                        <div className="image-preview-container">
-                            <img
-                                src={previewURLs[currentImageIndex]}
-                                alt="Preview"
-                                className="preview-image"
-                            />
-                        </div>
-                        <div className="image-nav-buttons">
-                            <Button className="nav-button" onClick={handlePrevImage}
-                                    disabled={images.length <= 1}>⬅️</Button>
-                            <Button className="nav-button" onClick={handleNextImage}
-                                    disabled={images.length <= 1}>➡️</Button>
-                        </div>
+                <div className="story-header">
+                    <div className="story-header-place">{story.place}</div>
+                    <div className="story-header-date">{story.date}</div>
+                </div>
+                <hr />
+                <div className="story-body">
+                    <div className="story-image">
+                        {images.length > 0 && (
+                            <div className="image-container">
+                                <button onClick={handlePrevImage}>&lt;</button>
+                                <img src={images[currentImageIndex]} alt={`Story image ${currentImageIndex + 1}`} />
+                                <button onClick={handleNextImage}>&gt;</button>
+                            </div>
+                        )}
+                    </div>
+                    <div className="story-title-content">
+                        <div className="story-title">{story.title}</div>
+                        <div className="story-content">{story.content}</div>
                     </div>
                 </div>
+                <hr />
+                <div className="story-footer"></div>
             </div>
-            <div className="form-center">
-                <div className="location-search">
-                    <TextField
-                        label="지역"
-                        value={location}
-                        onChange={(e) => {
-                            setLocation(e.target.value);
-                            handleSearch(e.target.value);
-                        }}
-                        fullWidth
-                    />
-                    {searchResults.length > 0 && (
-                        <div id="resultContainer">
-                            {searchResults.length > 0 ? (
-                                <List>
-                                    {searchResults.map((item, index) => (
-                                        <ListItem button key={index} onClick={() => handleResultClick(item)}>
-                                            <ListItemText
-                                                primary={item.title.replace(/<\/?b>/g, "")}
-                                                secondary={item.address}
-                                            />
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            ) : (
-                                <p>No results found</p>
-                            )}
+            <Dialog open={show}>
+                <DialogContent style={{ position: "relative" }}>
+                    <IconButton
+                        style={{ position: "absolute", top: "0", right: "0" }}
+                        onClick={() => setShow(false)}
+                    >
+                        <DisabledByDefaultOutlinedIcon />
+                    </IconButton>
+                    <div className="modal">
+                        <div className="modal-title"> 정말 삭제하시겠습니까 ?</div>
+                        <div className="modal-button">
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={async () => {
+                                    setShow(false);
+                                }}
+                            >
+                                예
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => {
+                                    setShow(false);
+                                }}
+                            >
+                                아니오
+                            </Button>
                         </div>
-                    )}
-                </div>
-                <TextField
-                    label="내용"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    multiline
-                    rows={4}
-                    fullWidth
-                />
-            </div>
-            <div className="form-bottom">
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                >
-                    저장하기
-                </Button>
-            </div>
-        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </React.Fragment>
     );
 };
 

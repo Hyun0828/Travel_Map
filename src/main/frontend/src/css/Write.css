@@ -1,4 +1,7 @@
 .diary-entry-page {
+    opacity: 0;
+    animation: smoothAppear 1.5s forwards;
+    animation-delay: 0.5s;
     display: flex;
     flex-direction: column; /* Stack elements vertically */
     gap: 20px; /* Gap between rows */

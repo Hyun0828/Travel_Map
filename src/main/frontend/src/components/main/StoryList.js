@@ -5,6 +5,8 @@ import axios from "axios";
 import {Card} from "./Card";
 import "../../css/StoryList.scss"
 
+axios.defaults.withCredentials = true;
+
 const StoryList = () => {
 
     const [pageCount, setPageCount] = useState(0);

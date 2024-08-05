@@ -33,7 +33,7 @@ const Sidebar = () => {
                 <div className="sidebar-content">
                     <Link to="/main/map">지도</Link>
                     <Link to="/main/storyList?page=1">일기</Link>
-                    <Link to="/main/story">일기 작성</Link>
+                    <Link to="/main/write">일기 작성</Link>
                     <Link to="/main/calendar">달력</Link>
                     <Link to="/main/settings">개인정보 설정</Link>
                     <div className="logout-wrapper">
