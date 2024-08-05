@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -71,10 +72,11 @@ public class StoryImageService {
     public List<String> uploadImages(Long storyId) {
         Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
         List<StoryImage> images = story.getImages();
-        List<String> imageUrls = new ArrayList<>();
 
-        for (StoryImage image : images)
-            imageUrls.add(image.getImageUrl().substring("/saveimages/".length()));
-        return imageUrls;
+        List<String> fileNames = images.stream()
+                .map(image -> image.getImageUrl().substring("/saveimages/".length()))
+                .toList();
+
+        return fileNames;
     }
 }

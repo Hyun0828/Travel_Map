@@ -1,7 +1,6 @@
 package travel.travel.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -29,9 +28,6 @@ public class StoryController {
     private final StoryImageService storyImageService;
     private final WritingService writingService;
     private final StoryRepository storyRepository;
-
-    @Value("${image.base.url}")
-    private final String imageBaseUrl;
 
     /**
      * 일기 작성하기
@@ -103,13 +99,13 @@ public class StoryController {
 
     /**
      * 모든 일기 이미지 불러오기
-     * 이미지 1개만 보낼 때와는 달리, uri list를 json으로 보내고, 프론트에서 각각을 uri -> blob -> 이미지로 변환
+     * http//localhost:8080/images + fileName으로 html에서 src에 넣어주면.. webconfig에서 이 특정 url에 대해 로컬 저장소를 뒤져서 이미지 전달해줌... 미쳤다..
      */
     @GetMapping("/storyImages")
     public ResponseEntity<List<String>> uploadImages(@RequestParam(value = "storyId") Long storyId) {
-        List<String> fileNames = storyImageService.uploadImages(storyId);
-        List<String> imageUrls = fileNames.stream()
-                .map(fileName -> Paths.get("").toAbsolutePath().resolve("saveimages").resolve(fileName).toUri().toString())
+        List<String> urls = storyImageService.uploadImages(storyId);
+        List<String> imageUrls = urls.stream()
+                .map(url -> "/images/" + url)
                 .toList();
         return ResponseEntity.ok(imageUrls);
     }

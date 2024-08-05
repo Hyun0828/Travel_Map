@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Button, Dialog, DialogContent, IconButton } from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {Button, Dialog, DialogContent, IconButton} from "@mui/material";
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import DisabledByDefaultOutlinedIcon from '@mui/icons-material/DisabledByDefaultOutlined';
@@ -11,7 +11,7 @@ axios.defaults.withCredentials = true;
 
 const Story = () => {
 
-    const { story_id } = useParams();
+    const {story_id} = useParams();
     const [story, setStory] = useState({});
     const [images, setImages] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -36,17 +36,8 @@ const Story = () => {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
-            const imageUrls = response.data;
-
-            console.log(imageUrls);
-
-            const imagePromises = imageUrls.map(async (imageUrl) => {
-                const response = await fetch(imageUrl);
-                const blob = await response.blob();
-                return URL.createObjectURL(blob);
-            });
-
-            return Promise.all(imagePromises);
+            console.log(response.data);
+            return response.data;
         };
 
         getStory().then(result => setStory(result)).then(() => setIsLoaded(true));
@@ -66,7 +57,7 @@ const Story = () => {
             <div className="story-wrapper">
                 <div className="edit-delete-button">
                     <Button
-                        variant="outlined" color="error" endIcon={<DeleteForeverOutlinedIcon />}
+                        variant="outlined" color="error" endIcon={<DeleteForeverOutlinedIcon/>}
                         className="delete-button"
                         onClick={() => {
                             setShow(true);
@@ -75,7 +66,7 @@ const Story = () => {
                         삭제
                     </Button>
                     <Button
-                        variant="outlined" endIcon={<BuildOutlinedIcon />}
+                        variant="outlined" endIcon={<BuildOutlinedIcon/>}
                         onClick={() => {
                             navigate(`/edit-story/${story_id}`);
                         }}
@@ -87,14 +78,17 @@ const Story = () => {
                     <div className="story-header-place">{story.place}</div>
                     <div className="story-header-date">{story.date}</div>
                 </div>
-                <hr />
+                <hr/>
                 <div className="story-body">
                     <div className="story-image">
                         {images.length > 0 && (
-                            <div className="image-container">
-                                <button onClick={handlePrevImage}>&lt;</button>
-                                <img src={images[currentImageIndex]} alt={`Story image ${currentImageIndex + 1}`} />
-                                <button onClick={handleNextImage}>&gt;</button>
+                            <div className="image-carousel">
+                                <img src={`http://localhost:8080${images[currentImageIndex]}`}
+                                     alt={`Story image ${currentImageIndex + 1}`} />
+                                <div className="image-navigation">
+                                    <Button className="img_button" onClick={handlePrevImage}>&lt;</Button>
+                                    <Button className="img_button" onClick={handleNextImage}>&gt;</Button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -103,16 +97,16 @@ const Story = () => {
                         <div className="story-content">{story.content}</div>
                     </div>
                 </div>
-                <hr />
+                <hr/>
                 <div className="story-footer"></div>
             </div>
             <Dialog open={show}>
-                <DialogContent style={{ position: "relative" }}>
+                <DialogContent style={{position: "relative"}}>
                     <IconButton
-                        style={{ position: "absolute", top: "0", right: "0" }}
+                        style={{position: "absolute", top: "0", right: "0"}}
                         onClick={() => setShow(false)}
                     >
-                        <DisabledByDefaultOutlinedIcon />
+                        <DisabledByDefaultOutlinedIcon/>
                     </IconButton>
                     <div className="modal">
                         <div className="modal-title"> 정말 삭제하시겠습니까 ?</div>
