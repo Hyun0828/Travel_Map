@@ -6,6 +6,7 @@ import Calendar from './Calendar';
 import Write from "./Write";
 import StoryList from "./StoryList"
 import Story from "./Story";
+import EditStory from "./EditStory";
 
 const MainContent = () => {
 
@@ -14,6 +15,7 @@ const MainContent = () => {
             <Routes>
                 <Route path="/map" element={<Map/>}/>
                 <Route path="/story/:story_id" element={<Story/>}/>
+                <Route path="/edit-story/:story_id" element={<EditStory/>}/>
                 <Route path="/storyList" element={<StoryList/>}/>
                 <Route path="/write" element={<Write/>}/>
                 <Route path="/calendar" element={<Calendar/>}/>

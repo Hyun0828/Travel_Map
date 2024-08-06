@@ -18,6 +18,7 @@ const Story = () => {
     const [isLoaded, setIsLoaded] = useState(false);
     const navigate = useNavigate();
     const accessToken = localStorage.getItem('accessToken');
+    // modal 창이 보이는가?
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -36,7 +37,6 @@ const Story = () => {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
-            console.log(response.data);
             return response.data;
         };
 
@@ -51,6 +51,14 @@ const Story = () => {
     const handlePrevImage = () => {
         setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
     };
+
+    const deleteStory = async () => {
+        await axios.delete(`http://localhost:8080/story?storyId=${story_id}`, {
+            headers : {
+                'Authorization' : `Bearer ${accessToken}`
+            }
+        });
+    }
 
     return (
         <React.Fragment>
@@ -68,7 +76,7 @@ const Story = () => {
                     <Button
                         variant="outlined" endIcon={<BuildOutlinedIcon/>}
                         onClick={() => {
-                            navigate(`/edit-story/${story_id}`);
+                            navigate(`/main/edit-story/${story_id}`);
                         }}
                     >
                         수정
@@ -116,6 +124,9 @@ const Story = () => {
                                 color="error"
                                 onClick={async () => {
                                     setShow(false);
+                                    await deleteStory();
+                                    alert("게시물이 삭제되었습니다😎");
+                                    window.location.href = "/main/storyList?page=1";
                                 }}
                             >
                                 예

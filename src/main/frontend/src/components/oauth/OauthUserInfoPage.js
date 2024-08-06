@@ -85,7 +85,7 @@ const OauthUserInfoPage = () => {
                 }
             });
 
-            alert("정보 수정 성공!");
+            window.alert("😎수정이 완료되었습니다😎");
 
             if (newImage) {
                 await handleImageUpload(); // 이미지가 있을 경우에만 업로드

@@ -81,14 +81,14 @@
   animation: smoothAppear 1.5s forwards;
   animation-delay: 0.5s;
   font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f4f4f4;
+  background-color: #fff;
   padding: 4rem;
   .story-header {
     justify-content: space-between;
     align-items: baseline;
     display: flex;
-    .story-header-address{
-      font-size: 2rem;
+    .story-header-place{
+      font-size: 1.5rem;
     }
     .story-header-date{
       font-size: 1.5rem;

@@ -313,7 +313,7 @@ const Map = () => {
                     font-family: 'Arial', sans-serif;
                 ">${content}</p>
                 
-                <a href="/ground/${dom_id}" style="
+                <a href="/main/story/${dom_id}" style="
                     display: inline-block;
                     padding: 8px 12px;
                     margin-top: 10px;

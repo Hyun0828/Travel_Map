@@ -39,7 +39,7 @@ public class StoryController {
         String accessToken = authorizationHeader.replace("Bearer ", "");
         Long storyId = storyService.create(accessToken, storyCreateRequestDto);
         writingService.save(accessToken, storyId);
-        storyImageService.update(storyId, imageFiles);
+        storyImageService.create(storyId, imageFiles);
         return ResponseEntity.ok().build();
     }
 
@@ -99,7 +99,8 @@ public class StoryController {
 
     /**
      * 모든 일기 이미지 불러오기
-     * http//localhost:8080/images + fileName으로 html에서 src에 넣어주면.. webconfig에서 이 특정 url에 대해 로컬 저장소를 뒤져서 이미지 전달해줌... 미쳤다..
+     * http//localhost:8080/images + fileName을 프론트로 보내고
+     * html에서 src에 넣어주면.. webconfig에서 이 특정 url에 대해 로컬 저장소를 뒤져서 이미지 전달해줌... 미쳤다..
      */
     @GetMapping("/storyImages")
     public ResponseEntity<List<String>> uploadImages(@RequestParam(value = "storyId") Long storyId) {
@@ -118,6 +119,7 @@ public class StoryController {
                                        @RequestPart("imageFiles") List<MultipartFile> imageFiles,
                                        @RequestPart(value = "requestDto") StoryUpdateRequestDto storyUpdateRequestDto) throws IOException {
         storyService.update(storyId, storyUpdateRequestDto);
+        storyImageService.delete(storyId);
         storyImageService.update(storyId, imageFiles);
         return ResponseEntity.ok().build();
     }
@@ -129,6 +131,7 @@ public class StoryController {
     public ResponseEntity<Void> delete(@RequestParam(value = "storyId") Long storyId) {
         //TODO sharing 삭제
         writingService.delete(storyId);
+        storyImageService.delete(storyId);
         storyService.delete(storyId);
         return ResponseEntity.ok().build();
     }
