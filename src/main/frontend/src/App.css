@@ -38,6 +38,7 @@
 }
 
 .main-content {
+    height: 100vh;
     flex: 1;
     padding: 20px;
     display: flex;
@@ -52,16 +53,13 @@
     position: relative; /* Ensure positioning */
 }
 
-/*.login-container, .signup-container, .userinfo-container {*/
-/*  max-width: 400px;*/
-/*  margin: 10px auto;*/
-/*  padding: 20px; !* Reduced padding to ensure it fits *!*/
-/*  border: 1px solid #ccc;*/
-/*  border-radius: 5px;*/
-/*  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
-/*  box-sizing: border-box;*/
-/*  overflow: auto; !* Enable scrolling within the container if needed *!*/
-/*}*/
+.calendar {
+    flex: 1; /* Ensure the calendar takes up all available space */
+    width: 90%; /* Ensure the calendar width is 100% of its parent */
+    height: 90%; /* Ensure the calendar height is 100% of its parent */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
 
 form div {
     margin-bottom: 15px;

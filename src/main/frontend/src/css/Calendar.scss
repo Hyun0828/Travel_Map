@@ -1,0 +1,185 @@
+@use 'Theme.scss';
+@use 'Common.scss' as common;
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: smoothAppear 1.5s forwards;
+  animation-delay: 0.5s;
+  margin-bottom: 60px;
+  @include common.size(100%, 100%);
+
+  .header {
+    @include common.size(100%, 7%);
+    @include common.flex-row(space-between, baseline);
+
+    .col.col-start {
+      @include common.size(80%, 100%);
+      @include common.flex-column(center, flex-start);
+      margin-left: 1%;
+
+      .text {
+        font-size: 0.8em;
+      }
+
+      .text.month {
+        margin-right: 5px;
+        font-size: 1.6em;
+        font-weight: 600;
+      }
+    }
+
+    .col.col-end {
+      @include common.size(20%, 100%);
+      @include common.flex-row(flex-end, baseline);
+
+      svg {
+        @include common.size(11%, fit-content);
+        margin-left: 5%;
+        color: transparentize(gray, 0.2);
+
+        &:hover {
+          @include common.hover-event();
+          transform: scale(1.15);
+          color: Theme.$dark-gray-color;
+        }
+      }
+    }
+  }
+
+  .days {
+    @include common.size(100%, fit-content);
+    @include common.flex-row(space-between, center);
+    font-weight: 600;
+    font-size: 1em;
+    padding: 2px;
+    color: Theme.$dark-gray-color;
+
+    .col {
+      @include common.size(12.9%, 100%);
+      @include common.flex-column(flex-end, flex-start);
+      padding-left: 1%;
+      background: transparentize(Theme.$step-color, 0.6);
+      border-radius: 10px;
+
+      &.sunday {
+        color: red;
+      }
+
+      &.saturday {
+        color: blue;
+      }
+    }
+  }
+
+  .body {
+    @include common.size(100%, 89%);
+    @include common.flex-column();
+
+    .row {
+      @include common.size(100%, 100%);
+      @include common.flex-row(space-between, center);
+
+      .col {
+        @include common.size(13.5%, 93%);
+        @include common.flex-row(flex-start, flex-start);
+
+        border: 0.4px solid transparentize(gray, 0.4);
+        border-radius: 3px;
+        font-size: 0.8em;
+        position: relative;
+        overflow: hidden;
+
+        &.disabled {
+          border: 0.4px solid transparentize(gray, 0.7); // 연한 그레이 색상으로 테두리 변경
+        }
+
+        span {
+          margin: 4px 0 0 4px;
+
+          // Default styling for numbers
+          &.day-number {
+            color: Theme.$dark-gray-color;
+          }
+
+          // Special styling for Sunday and Saturday
+          &.day-number.sunday {
+            color: red;
+          }
+
+          &.day-number.saturday {
+            color: blue;
+          }
+        }
+
+        img {
+          opacity: 0.1;
+        }
+
+        .story-details {
+          margin-top: 5px;
+          font-size: 1em;
+          font-weight: 600;
+          color: Theme.$dark-gray-color;
+          padding: 2px;
+          overflow-y: auto; // 세로 방향 스크롤 활성화
+          max-height: calc(3 * 3em + 10px);
+
+          /* 스크롤바 스타일 숨기기 */
+          scrollbar-width: none; /* Firefox */
+          &::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+          }
+
+          .story-item {
+            margin-bottom: 2px;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            height: 3em;
+
+            &:hover {
+              @include common.shadow(1.5px, Theme.$dark-gray-color, 0.1);
+              background-color: Theme.$sub-color;
+              color: Theme.$main-color;
+            }
+
+            strong {
+              display: block;
+              font-weight: 600;
+            }
+
+            p {
+              margin: 0;
+              font-size: 0.9em;
+              color: Theme.$dark-gray-color;
+            }
+          }
+        }
+      }
+
+      .col.cell.selected {
+        //@include common.shadow(1.5px, Theme.$main-color, 0.1);
+        transform: scale(1.02);
+        border: 0.4px solid transparentize(gray, 0.4);
+        border-radius: 3px;
+        background: Theme.$dashboard-color;
+        font-weight: 600;
+
+        .today-label {
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          background-color: Theme.$main-color;
+          color: white;
+          font-size: 0.6em;
+          padding: 2px 5px;
+          border-radius: 3px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}

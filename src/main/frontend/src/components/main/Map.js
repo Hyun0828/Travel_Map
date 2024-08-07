@@ -17,7 +17,19 @@ const Map = () => {
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);  // 브라우저의 현재 너비
     const navermaps = useNavermaps();
 
+    // const {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5} = useGetClusterIcon(navermaps); // 클러스터링 아이콘
+    // const [cluster, setCluster] = useState(getCluster());
+    // const MarkerClustering = makeMarkerClustering(window.naver);
+
     const accessToken = localStorage.getItem('accessToken');
+
+    /**
+     * 클러스터 객체 생성 후 저장
+     */
+    // useEffect(() => {
+    //     // 클러스트 객체 생성해서, 상태에 저장
+    //     setCluster(getCluster());
+    // }, []);
 
     /**
      * DB에서 전체 일기를 가져와서 totalDataArray를 채우는 로직
@@ -205,6 +217,58 @@ const Map = () => {
         updateMarkers(mapElement.current, createMarkerList.current);
     };
 
+    // /**
+    //  * 마커 클러스터링 아이콘 생성
+    //  */
+    // const useGetClusterIcon = (navermaps) => {
+    //     const htmlMarker1 = {
+    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png);background-size:contain;"></div>',
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     }
+    //     const htmlMarker2 = {
+    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-2.png);background-size:contain;"></div>',
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     }
+    //     const htmlMarker3 = {
+    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-3.png);background-size:contain;"></div>',
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     }
+    //     const htmlMarker4 = {
+    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-4.png);background-size:contain;"></div>',
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     }
+    //     const htmlMarker5 = {
+    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-5.png);background-size:contain;"></div>',
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     }
+    //     return {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5};
+    // };
+    //
+    // /**
+    //  * 클러스터 객체 생성
+    //  */
+    // const getCluster = () => {
+    //
+    //     return new MarkerClustering({
+    //         minClusterSize: 2,
+    //         maxZoom: 14, // 조절하면 클러스터링이 되는 기준이 달라짐 (map zoom level)
+    //         map: mapElement.current,
+    //         markers: createMarkerList.current,
+    //         disableClickZoom: false,
+    //         gridSize: 120,
+    //         icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
+    //         indexGenerator: [5, 10, 15, 20, 30],
+    //         stylingFunction: function (clusterMarker, count) {
+    //             clusterMarker.getElement().querySelector('div:first-child').innerText =
+    //                 count;
+    //         },
+    //     });
+    // }
 
     /**
      * 마커가 현재 보이는 영역에 있는지 확인하고 보이면 showMarker, 숨겨져 있으면 hideMarker 호출
@@ -246,9 +310,6 @@ const Map = () => {
 
     const getClickHandler = (index) => {
         return () => {
-            console.log('Marker clicked:', index);
-            console.log(infoWindowList.current[index]);
-            console.log(createMarkerList.current[index]);
             if (infoWindowList.current[index].getMap())
                 infoWindowList.current[index].close();
             else if (mapElement.current != null)

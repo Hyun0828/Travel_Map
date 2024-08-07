@@ -36,6 +36,8 @@ public class StoryController {
     public ResponseEntity<Void> create(@RequestPart("imageFiles") List<MultipartFile> imageFiles,
                                        @RequestPart(value = "requestDto") StoryCreateRequestDto storyCreateRequestDto,
                                        @RequestHeader("Authorization") String authorizationHeader) throws IOException {
+        System.out.println("날짜 : " + storyCreateRequestDto.getDate());
+
         String accessToken = authorizationHeader.replace("Bearer ", "");
         Long storyId = storyService.create(accessToken, storyCreateRequestDto);
         writingService.save(accessToken, storyId);

@@ -15,7 +15,6 @@ const EditStory = () => {
     const [location, setLocation] = useState("");
     const [locationObj, setLocationObj] = useState(null);
     const [content, setContent] = useState("");
-    const [prevImages, setPrevImages] = useState([]);
     const [images, setImages] = useState([]);
     const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import axios from "axios";
 import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
 import Calendar from 'react-calendar';
+import {addDays, format, formatISO} from 'date-fns';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/Write.css';
 import {useNavigate} from "react-router-dom";
@@ -72,12 +73,13 @@ const Write = () => {
             images.forEach((image) => {
                 formData.append('imageFiles', image);
             });
+            const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm:ss");
             const requestDto = JSON.stringify(({
                 title,
                 content,
                 place: locationObj.title.replace(/<\/?b>/g, ""),
                 address: locationObj.roadAddress,
-                date
+                date: formattedDate
             }));
 
             formData.append('requestDto', new Blob([requestDto], {
