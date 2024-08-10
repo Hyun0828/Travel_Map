@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.filter.GenericFilterBean;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.repository.RefreshRepository;
@@ -53,6 +55,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         // token이 유효하지 않으면
+//        try {
+//            jwtService.isTokenValid(refreshToken.get());
+//        } catch (Exception e) {
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//            return;
+//        }
+
         if (!jwtService.isTokenValid(refreshToken.get())) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;

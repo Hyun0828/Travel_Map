@@ -4,6 +4,7 @@ import {useSearchParams} from "react-router-dom";
 import axios from "axios";
 import {Card} from "./Card";
 import "../../css/StoryList.scss"
+import TokenInterceptor from "../main/axios/TokenInterceptor";
 
 axios.defaults.withCredentials = true;
 
@@ -25,6 +26,7 @@ const StoryList = () => {
                         'Authorization': `Bearer ${accessToken}`
                     },
                 });
+                // const response = await TokenInterceptor.get(`http://localhost:8080/story/paging?page_number=${page_number}&page_size=4`);
                 const stories = response.data;
                 const storyIds = stories.map(story => story.id);
 
@@ -55,6 +57,7 @@ const StoryList = () => {
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
+                // const totalResponse = await TokenInterceptor.get("http://localhost:8080/story/count");
                 setPageCount(Math.ceil(totalResponse.data / 4));
             } catch (error) {
                 console.error('데이터 로드 오류:', error);

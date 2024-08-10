@@ -1,7 +1,10 @@
 package travel.travel.jwt.service;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.RefreshToken;
+import travel.travel.exception.TokenInvalidException;
+import travel.travel.exception.TokenExpiredException;
 import travel.travel.repository.CommonUserRepository;
 import travel.travel.repository.RefreshRepository;
 
@@ -151,7 +156,6 @@ public class JwtService {
      */
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         response.addCookie(createCookie(refreshHeader, refreshToken));
-//        response.addHeader("Set-Cookie", createCookie(refreshHeader, refreshToken).toString());
     }
 
     /**
@@ -176,6 +180,19 @@ public class JwtService {
     /**
      * 토큰 유효성 검사
      */
+//    public void isTokenValid(String token) {
+//        try {
+//            JWTVerifier verifier = JWT.require(Algorithm.HMAC512(secretKey)).build();
+//            DecodedJWT decodedJWT = verifier.verify(token);
+//        } catch (TokenExpiredException e) {
+//            throw new TokenExpiredException("토큰 만료");
+//        } catch (JWTVerificationException e) {
+//            throw new TokenInvalidException("유효하지 않은 토큰");
+//        } catch (Exception e) {
+//            throw new RuntimeException("토큰 검증 중 오류 발생", e);
+//        }
+//    }
+
     public boolean isTokenValid(String token) {
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
@@ -200,15 +217,4 @@ public class JwtService {
         cookie.setAttribute("SameSite", "None");
         return cookie;
     }
-
-//    private ResponseCookie createCookie(String key, String value) {
-//        return ResponseCookie
-//                .from(key, value)
-//                .maxAge(refreshTokenExpirationPeriod)
-//                .path("/")
-//                .httpOnly(true)
-//                .secure(true)
-//                .sameSite("None")
-//                .build();
-//    }
 }

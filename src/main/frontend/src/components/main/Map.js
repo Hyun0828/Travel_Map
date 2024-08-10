@@ -1,8 +1,10 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import axios from "axios";
-import {useNavermaps} from "react-naver-maps";
+import {Overlay, useMap, useNavermaps} from "react-naver-maps";
 import {DataContext} from "../../contexts/DataContext";
 import "../../css/Map.css";
+import MarkerClustering from "../main/cluster/MarkerClustering";
+
 
 axios.defaults.withCredentials = true;
 
@@ -17,19 +19,7 @@ const Map = () => {
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);  // 브라우저의 현재 너비
     const navermaps = useNavermaps();
 
-    // const {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5} = useGetClusterIcon(navermaps); // 클러스터링 아이콘
-    // const [cluster, setCluster] = useState(getCluster());
-    // const MarkerClustering = makeMarkerClustering(window.naver);
-
     const accessToken = localStorage.getItem('accessToken');
-
-    /**
-     * 클러스터 객체 생성 후 저장
-     */
-    // useEffect(() => {
-    //     // 클러스트 객체 생성해서, 상태에 저장
-    //     setCluster(getCluster());
-    // }, []);
 
     /**
      * DB에서 전체 일기를 가져와서 totalDataArray를 채우는 로직
@@ -217,59 +207,6 @@ const Map = () => {
         updateMarkers(mapElement.current, createMarkerList.current);
     };
 
-    // /**
-    //  * 마커 클러스터링 아이콘 생성
-    //  */
-    // const useGetClusterIcon = (navermaps) => {
-    //     const htmlMarker1 = {
-    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png);background-size:contain;"></div>',
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     }
-    //     const htmlMarker2 = {
-    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-2.png);background-size:contain;"></div>',
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     }
-    //     const htmlMarker3 = {
-    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-3.png);background-size:contain;"></div>',
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     }
-    //     const htmlMarker4 = {
-    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-4.png);background-size:contain;"></div>',
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     }
-    //     const htmlMarker5 = {
-    //         content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-5.png);background-size:contain;"></div>',
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     }
-    //     return {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5};
-    // };
-    //
-    // /**
-    //  * 클러스터 객체 생성
-    //  */
-    // const getCluster = () => {
-    //
-    //     return new MarkerClustering({
-    //         minClusterSize: 2,
-    //         maxZoom: 14, // 조절하면 클러스터링이 되는 기준이 달라짐 (map zoom level)
-    //         map: mapElement.current,
-    //         markers: createMarkerList.current,
-    //         disableClickZoom: false,
-    //         gridSize: 120,
-    //         icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
-    //         indexGenerator: [5, 10, 15, 20, 30],
-    //         stylingFunction: function (clusterMarker, count) {
-    //             clusterMarker.getElement().querySelector('div:first-child').innerText =
-    //                 count;
-    //         },
-    //     });
-    // }
-
     /**
      * 마커가 현재 보이는 영역에 있는지 확인하고 보이면 showMarker, 숨겨져 있으면 hideMarker 호출
      */
@@ -448,16 +385,69 @@ const Map = () => {
         // setSortedDomData(newArray);
     };
 
+
+    // const MarkerCluster = () => {
+    //
+    //     const {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5} = useGetClusterIcon(navermaps); // 클러스트 아이콘 DOM 리스트
+    //
+    //     const getCluster = () => {
+    //
+    //         const cluster = new MarkerClustering({
+    //             minClusterSize: 2,
+    //             maxZoom: 14, // 조절하면 클러스터링이 되는 기준이 달라짐 (map zoom level)
+    //             map: mapElement.current,
+    //             markers: createMarkerList.current,
+    //             disableClickZoom: false,
+    //             gridSize: 120,
+    //             icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
+    //             indexGenerator: [5, 10, 15, 20, 30],
+    //             stylingFunction: function (clusterMarker, count) {
+    //                 clusterMarker.getElement().querySelector('div:first-child').innerText = count;
+    //             },
+    //         });
+    //
+    //         return cluster;
+    //     };
+    //
+    //     const [cluster] = useState(getCluster());
+    //
+    //     return <Overlay element={cluster}/>;
+    // }
+    //
+    // /**
+    //  * 마커 클러스터링 아이콘 생성
+    //  */
+    // const useGetClusterIcon = (navermaps) => {
+    //     const createClusterIcon = (url) => ({
+    //         content: `<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(${url});background-size:contain;"></div>`,
+    //         size: navermaps.Size(40, 40),
+    //         anchor: navermaps.Point(20, 20),
+    //     });
+    //
+    //     return {
+    //         htmlMarker1: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png'),
+    //         htmlMarker2: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-2.png'),
+    //         htmlMarker3: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-3.png'),
+    //         htmlMarker4: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-4.png'),
+    //         htmlMarker5: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-5.png'),
+    //     };
+    // };
+
     return (
         <div className="map-container">
-            <form onSubmit={handleSearch}>
-                <input type="text" name="keyword" placeholder="Enter a location"/>
-                <button type="submit">Search</button>
-            </form>
+            <div className="map-header">
+                <p>일기 지도 🗺</p>
+            </div>
+            {/*<form onSubmit={handleSearch}>*/}
+            {/*    <input type="text" name="keyword" placeholder="Enter a location"/>*/}
+            {/*    <button type="submit">Search</button>*/}
+            {/*</form>*/}
             {/*<button onClick={() => resetListHandler()}>*/}
             {/*    Reset List*/}
             {/*</button>*/}
-            <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}/>
+            <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}>
+                {/*<MarkerCluster/>*/}
+            </div>
         </div>
     );
 };
