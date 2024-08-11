@@ -6,8 +6,8 @@ import {addDays, format, formatISO} from 'date-fns';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/Write.css';
 import {useNavigate} from "react-router-dom";
+import instance from "../main/axios/TokenInterceptor";
 
-axios.defaults.withCredentials = true;
 
 const Write = () => {
     const [title, setTitle] = useState("");
@@ -19,20 +19,27 @@ const Write = () => {
     const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
-    const accessToken = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
     const handleSearch = async (text) => {
         if (text && typeof text === 'string' && text.trim() !== "") {
             try {
-                const response = await axios.get("http://localhost:8080/naver/search", {
-                    params: {text},
-                    headers: {
+                // const response = await axios.get("http://localhost:8080/naver/search", {
+                //     params: {text},
+                //     headers: {
+                //         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
+                //         "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
+                //         Authorization: `Bearer ${accessToken}`
+                //     }
+                // });
+                const response = await instance.get('http://localhost:8080/naver/search', {
+                    params:{text},
+                    headers:{
                         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
-                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
-                        Authorization: `Bearer ${accessToken}`
+                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET
                     }
                 });
+
                 console.log("Search results:", response.data.items);
                 setSearchResults(response.data.items);
             } catch (error) {
@@ -87,12 +94,18 @@ const Write = () => {
             }));
 
             try {
-                await axios.post("http://localhost:8080/story", formData, {
+                // await axios.post("http://localhost:8080/story", formData, {
+                //     headers: {
+                //         "Content-Type": "multipart/form-data",
+                //         Authorization: `Bearer ${accessToken}`
+                //     }
+                // });
+
+                await instance.post('http://localhost:8080/story', formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                        Authorization: `Bearer ${accessToken}`
                     }
-                });
+                })
                 setTitle("");
                 setDate(new Date());
                 setLocation("");

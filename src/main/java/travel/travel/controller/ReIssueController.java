@@ -28,13 +28,13 @@ public class ReIssueController {
             return new ResponseEntity<>("RefreshToken이 없습니다", HttpStatus.BAD_REQUEST);
 
         // refreshToken 유효성 검사
-//        try {
-//            jwtService.isTokenValid(refreshToken.get());
-//        } catch (Exception e) {
-//            return new ResponseEntity<>("RefreshToken이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
-//        }
-        if (!jwtService.isTokenValid(refreshToken.get()))
+        try {
+            jwtService.isTokenValid(refreshToken.get());
+        } catch (Exception e) {
             return new ResponseEntity<>("RefreshToken이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+//        if (!jwtService.isTokenValid(refreshToken.get()))
+//            return new ResponseEntity<>("RefreshToken이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
 
         // 블랙리스트 여부 검사 (DB에 저장되어 있는지)
         if (!refreshRepository.existsByRefresh(refreshToken.get()))

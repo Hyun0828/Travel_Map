@@ -180,28 +180,28 @@ public class JwtService {
     /**
      * 토큰 유효성 검사
      */
-//    public void isTokenValid(String token) {
-//        try {
-//            JWTVerifier verifier = JWT.require(Algorithm.HMAC512(secretKey)).build();
-//            DecodedJWT decodedJWT = verifier.verify(token);
-//        } catch (TokenExpiredException e) {
-//            throw new TokenExpiredException("토큰 만료");
-//        } catch (JWTVerificationException e) {
-//            throw new TokenInvalidException("유효하지 않은 토큰");
-//        } catch (Exception e) {
-//            throw new RuntimeException("토큰 검증 중 오류 발생", e);
-//        }
-//    }
-
-    public boolean isTokenValid(String token) {
+    public void isTokenValid(String token) {
         try {
-            JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-            return true;
+            JWTVerifier verifier = JWT.require(Algorithm.HMAC512(secretKey)).build();
+            DecodedJWT decodedJWT = verifier.verify(token);
+        } catch (TokenExpiredException e) {
+            throw new TokenExpiredException("토큰 만료");
+        } catch (JWTVerificationException e) {
+            throw new TokenInvalidException("유효하지 않은 토큰");
         } catch (Exception e) {
-            log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
-            return false;
+            throw new RuntimeException("토큰 검증 중 오류 발생", e);
         }
     }
+
+//    public boolean isTokenValid(String token) {
+//        try {
+//            JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+//            return true;
+//        } catch (Exception e) {
+//            log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
+//            return false;
+//        }
+//    }
 
     /**
      * 쿠키 생성

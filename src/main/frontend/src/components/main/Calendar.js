@@ -13,10 +13,8 @@ import {
     subMonths
 } from 'date-fns';
 import '../../css/Calendar.scss';
-import axios from "axios";
 import {useNavigate} from "react-router-dom";
-
-axios.defaults.withCredentials = true;
+import instance from "../main/axios/TokenInterceptor";
 
 
 const RenderHeader = ({currentMonth, prevMonth, nextMonth}) => {
@@ -128,7 +126,6 @@ export const Calendar = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [storyList, setStoryList] = useState([]);
     const navigate = useNavigate();
-    const accessToken = localStorage.getItem('accessToken');
 
     /**
      * DB에서 전체 일기를 가져오기
@@ -137,11 +134,12 @@ export const Calendar = () => {
         const fetchData = async () => {
             setStoryList([]);
             try {
-                const response = await axios.get("http://localhost:8080/story/all", {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
+                // const response = await axios.get("http://localhost:8080/story/all", {
+                //     headers: {
+                //         'Authorization': `Bearer ${accessToken}`
+                //     }
+                // });
+                const response = await instance.get('http://localhost:8080/story/all');
                 const storyInfoResponseDtos = response.data;
 
                 for (const dto of storyInfoResponseDtos) {

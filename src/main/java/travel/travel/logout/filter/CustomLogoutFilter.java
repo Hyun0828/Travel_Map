@@ -55,17 +55,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
         }
 
         // token이 유효하지 않으면
-//        try {
-//            jwtService.isTokenValid(refreshToken.get());
-//        } catch (Exception e) {
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            return;
-//        }
-
-        if (!jwtService.isTokenValid(refreshToken.get())) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        try {
+            jwtService.isTokenValid(refreshToken.get());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
+//        if (!jwtService.isTokenValid(refreshToken.get())) {
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            return;
+//        }
 
         // token이 블랙리스트인지 확인
         if (!refreshRepository.existsByRefresh(refreshToken.get())) {

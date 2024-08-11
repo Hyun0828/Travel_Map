@@ -16,8 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
-import travel.travel.exception.TokenInvalidException;
 import travel.travel.exception.TokenExpiredException;
+import travel.travel.exception.TokenInvalidException;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.jwt.util.PasswordUtil;
 import travel.travel.repository.UserRepository;
@@ -49,10 +49,16 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().equals(NO_CHECK_URL)) {
-            log.debug("Request URI is /login, skipping filter.");
-            filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
-            return; // return으로 이후 현재 필터 진행 막기 (안 해주면 아래로 내려가서 계속 필터 진행시킴)
+//        if (request.getRequestURI().equals(NO_CHECK_URL)) {
+//            log.debug("Request URI is /login, skipping filter.");
+//            filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
+//            return; // return으로 이후 현재 필터 진행 막기 (안 해주면 아래로 내려가서 계속 필터 진행시킴)
+//        }
+        String path = request.getRequestURI();
+        if (path.startsWith("/login") || path.startsWith("/oauth") || path.startsWith("/sign-up") || path.startsWith("/reissue") || path.startsWith("/google-login")) {
+            log.debug("JWT Authentication Filter Skip");
+            filterChain.doFilter(request, response);
+            return;
         }
 
         // AccessToken 체크 및 인증 처리
@@ -71,32 +77,38 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                                                   FilterChain filterChain) throws ServletException, IOException {
         log.info("checkAccessTokenAndAuthentication() 호출");
 
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
-                        .ifPresent(email -> userRepository.findByEmail(email)
-                                .ifPresent(this::saveAuthentication)));
+//        jwtService.extractAccessToken(request)
+//                .filter(jwtService::isTokenValid)
+//                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
+//                        .ifPresent(email -> userRepository.findByEmail(email)
+//                                .ifPresent(this::saveAuthentication)));
 
-//        String accessToken = jwtService.extractAccessToken(request).orElse(null);
-//
-//        if (accessToken == null) {
-//            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 없습니다");
-//            return;
-//        }
-//
-//        try {
-//            jwtService.isTokenValid(accessToken);
-//            jwtService.extractEmail(accessToken)
-//                    .ifPresent(email -> userRepository.findByEmail(email)
-//                            .ifPresent(this::saveAuthentication));
-//        } catch (TokenExpiredException | TokenInvalidException e) {
-//            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-//            return;
-//        } catch (RuntimeException e) {
-//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 오류 : " + e.getMessage());
-//            return;
-//        }
+        log.info("1");
+        String accessToken = jwtService.extractAccessToken(request).orElse(null);
 
+        if (accessToken == null) {
+            log.info("2");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 없습니다");
+            return;
+        }
+
+        try {
+            log.info("3");
+            jwtService.isTokenValid(accessToken);
+            jwtService.extractEmail(accessToken)
+                    .ifPresent(email -> userRepository.findByEmail(email)
+                            .ifPresent(this::saveAuthentication));
+        } catch (TokenExpiredException | TokenInvalidException e) {
+            log.info("4");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            return;
+        } catch (RuntimeException e) {
+            log.info("5");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 오류 : " + e.getMessage());
+            return;
+        }
+
+        log.info("6");
         filterChain.doFilter(request, response);
     }
 

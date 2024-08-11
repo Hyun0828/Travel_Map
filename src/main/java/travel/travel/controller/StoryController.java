@@ -33,7 +33,7 @@ public class StoryController {
      * 일기 작성하기
      */
     @PostMapping("/story")
-    public ResponseEntity<Void> create(@RequestPart("imageFiles") List<MultipartFile> imageFiles,
+    public ResponseEntity<Void> create(@RequestPart(value = "imageFiles") List<MultipartFile> imageFiles,
                                        @RequestPart(value = "requestDto") StoryCreateRequestDto storyCreateRequestDto,
                                        @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         System.out.println("날짜 : " + storyCreateRequestDto.getDate());
@@ -118,7 +118,7 @@ public class StoryController {
      */
     @PutMapping("/story")
     public ResponseEntity<Void> update(@RequestParam(value = "storyId") Long storyId,
-                                       @RequestPart("imageFiles") List<MultipartFile> imageFiles,
+                                       @RequestPart(value = "imageFiles") List<MultipartFile> imageFiles,
                                        @RequestPart(value = "requestDto") StoryUpdateRequestDto storyUpdateRequestDto) throws IOException {
         storyService.update(storyId, storyUpdateRequestDto);
         storyImageService.delete(storyId);

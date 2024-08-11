@@ -6,8 +6,8 @@ import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined
 import DisabledByDefaultOutlinedIcon from '@mui/icons-material/DisabledByDefaultOutlined';
 import axios from "axios";
 import "../../css/Story.scss";
+import instance from "../main/axios/TokenInterceptor";
 
-axios.defaults.withCredentials = true;
 
 const Story = () => {
 
@@ -17,32 +17,41 @@ const Story = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isLoaded, setIsLoaded] = useState(false);
     const navigate = useNavigate();
-    const accessToken = localStorage.getItem('accessToken');
     // modal 창이 보이는가?
     const [show, setShow] = useState(false);
 
     useEffect(() => {
         const getStory = async () => {
-            const response = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            // const response = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
+            //     headers: {
+            //         'Authorization': `Bearer ${accessToken}`
+            //     }
+            // });
+            const response = await instance.get(`http://localhost:8080/story?storyId=${story_id}`);
             return response.data;
         };
 
-        const getImages = async () => {
-            const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-            return response.data;
+        const getImagesUrl = async () => {
+            // const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
+            //     headers: {
+            //         'Authorization': `Bearer ${accessToken}`
+            //     }
+            // });
+            const response = await instance.get(`http://localhost:8080/storyImages?storyId=${story_id}`);
+            const imageUrls = await Promise.all(
+                response.data.map(async (image) => {
+                    const imgResponse = await instance.get(`http://localhost:8080${image}`, {
+                        responseType: 'blob'
+                    });
+                    return URL.createObjectURL(imgResponse.data);
+                })
+            );
+            setImages(imageUrls);
         };
 
         getStory().then(result => setStory(result)).then(() => setIsLoaded(true));
-        getImages().then(imageUrls => setImages(imageUrls));
-    }, [story_id, accessToken]);
+        getImagesUrl();
+    }, [story_id]);
 
     const handleNextImage = () => {
         setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -53,11 +62,12 @@ const Story = () => {
     };
 
     const deleteStory = async () => {
-        await axios.delete(`http://localhost:8080/story?storyId=${story_id}`, {
-            headers : {
-                'Authorization' : `Bearer ${accessToken}`
-            }
-        });
+        // await axios.delete(`http://localhost:8080/story?storyId=${story_id}`, {
+        //     headers : {
+        //         'Authorization' : `Bearer ${accessToken}`
+        //     }
+        // });
+        await instance.delete(`http://localhost:8080/story?storyId=${story_id}`);
     }
 
     return (
@@ -91,7 +101,7 @@ const Story = () => {
                     <div className="story-image">
                         {images.length > 0 && (
                             <div className="image-carousel">
-                                <img src={`http://localhost:8080${images[currentImageIndex]}`}
+                                <img src={images[currentImageIndex]}
                                      alt={`Story image ${currentImageIndex + 1}`} />
                                 <div className="image-navigation">
                                     <Button className="img_button" onClick={handlePrevImage}>&lt;</Button>

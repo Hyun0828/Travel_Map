@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../css/Sidebar.css'
+import instance from "../main/axios/TokenInterceptor";
+
 axios.defaults.withCredentials = true;
 
 const Sidebar = () => {
@@ -11,8 +13,8 @@ const Sidebar = () => {
     const handleLogout = async () => {
         try {
             // 로그아웃 API 호출
-            await axios.post('http://localhost:8080/logout', {}, {
-            }); // 로그아웃 API 엔드포인트에 맞게 수정
+            // await axios.post('http://localhost:8080/logout'); // 로그아웃 API 엔드포인트에 맞게 수정
+            await instance.post('http://localhost:8080/logout');
             localStorage.removeItem('accessToken');
             navigate('/'); // 로그인 페이지 이동
         } catch (error) {

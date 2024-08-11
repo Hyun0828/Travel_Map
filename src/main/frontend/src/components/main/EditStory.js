@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from "react";
-import axios from "axios";
 import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/EditStory.css';
 import {useNavigate, useParams} from "react-router-dom";
-
-axios.defaults.withCredentials = true;
+import instance from "../main/axios/TokenInterceptor";
+import {format} from "date-fns";
 
 const EditStory = () => {
     const {story_id} = useParams();
@@ -16,10 +15,9 @@ const EditStory = () => {
     const [locationObj, setLocationObj] = useState(null);
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
-    const [previewURLs, setPreviewURLs] = useState(['/images/anonymous.png']);
+    const [previewImages, setPreviewImages] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
-    const accessToken = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
     /**
@@ -28,14 +26,14 @@ const EditStory = () => {
     const handleSearch = async (text) => {
         if (text && typeof text === 'string' && text.trim() !== "") {
             try {
-                const response = await axios.get("http://localhost:8080/naver/search", {
+                const response = await instance.get('http://localhost:8080/naver/search', {
                     params: {text},
                     headers: {
                         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
-                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
-                        Authorization: `Bearer ${accessToken}`
+                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET
                     }
                 });
+
                 console.log("Search results:", response.data.items);
                 setSearchResults(response.data.items);
             } catch (error) {
@@ -53,10 +51,12 @@ const EditStory = () => {
     const handleImageChange = (e) => {
         e.preventDefault();
         const files = Array.from(e.target.files);
-        const newPreviewURLs = files.map(file => URL.createObjectURL(file));
         setImages(files);
-        setPreviewURLs(newPreviewURLs);
+
+        // 이미지 미리보기를 위한 URL 생성
+        const previewUrls = files.map((file) => URL.createObjectURL(file));
         setCurrentImageIndex(0);
+        setPreviewImages(previewUrls); // 미리보기용 URL 설정
     };
 
     /**
@@ -75,21 +75,35 @@ const EditStory = () => {
      */
     useEffect(() => {
         const getStory = async () => {
-            const {data} = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            // const {data} = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
+            //     headers: {
+            //         'Authorization': `Bearer ${accessToken}`
+            //     }
+            // });
+
+            const {data} = await instance.get(`http://localhost:8080/story?storyId=${story_id}`);
+
             return data;
         }
 
         const getImages = async () => {
-            const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-            return response.data;
+            // const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
+            //     headers: {
+            //         'Authorization': `Bearer ${accessToken}`
+            //     }
+            // });
+
+            const response = await instance.get(`http://localhost:8080/storyImages?storyId=${story_id}`);
+            const imageUrls = await Promise.all(
+                response.data.map(async (image) => {
+                    const imgResponse = await instance.get(`http://localhost:8080${image}`, {
+                        responseType: 'blob'
+                    });
+                    return URL.createObjectURL(imgResponse.data);
+                })
+            );
+            setPreviewImages(imageUrls);
+            setImages(imageUrls);
         };
 
         getStory().then((result) => {
@@ -102,21 +116,7 @@ const EditStory = () => {
                 roadAddress: result.address
             });
         });
-        getImages().then(async imageUrls => {
-            console.log(imageUrls);
-
-            setPreviewURLs(imageUrls.length ? imageUrls : ['/images/anonymous.png']);
-
-            // images에는 url이 아닌 blob 객체를 넣어야 한다.
-            const imageBlobs = await Promise.all(imageUrls.map(async (url) => {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const file = new File([blob], url.split('/').pop(), { type: blob.type });
-                return file;
-            }));
-
-            setImages(imageBlobs);
-        });
+        getImages();
     }, [])
 
     /**
@@ -129,16 +129,23 @@ const EditStory = () => {
         }
 
         const formData = new FormData();
-        images.forEach((image) => {
-            formData.append('imageFiles', image);
-        });
 
+        for (let image of images) {
+            let blob;
+            if (typeof image === 'string')
+                blob = await convertUrlToBlob(image);
+            else
+                blob = image;
+            formData.append('imageFiles', blob);
+        }
+
+        const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm:ss");
         const requestDto = JSON.stringify(({
             title,
             content,
             place: locationObj.title.replace(/<\/?b>/g, ""),
             address: locationObj.roadAddress,
-            date
+            date: formattedDate
         }));
 
         formData.append('requestDto', new Blob([requestDto], {
@@ -146,19 +153,26 @@ const EditStory = () => {
         }));
 
         try {
-            await axios.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
+            // await axios.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
+            //     headers: {
+            //         "Content-Type": "multipart/form-data",
+            //         Authorization: `Bearer ${accessToken}`
+            //     }
+            // });
+
+            await instance.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${accessToken}`
+                    "Content-Type": "multipart/form-data"
                 }
-            });
+            })
+
             setTitle("");
             setDate(new Date());
             setLocation("");
             setLocationObj(null);
             setContent("");
             setImages([]);
-            setPreviewURLs(['/images/anonymous.png']);
+            setPreviewImages([]);
 
             window.alert("😎수정이 완료되었습니다😎");
             navigate("/main/storyList?page=1");
@@ -167,12 +181,23 @@ const EditStory = () => {
         }
     };
 
-    const handlePrevImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? previewURLs.length - 1 : prevIndex - 1));
+    const handleNextImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
     };
 
-    const handleNextImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex === previewURLs.length - 1 ? 0 : prevIndex + 1));
+    const handlePrevImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    };
+
+    const convertUrlToBlob = async (url) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return blob;
+        } catch (error) {
+            console.error('Error converting URL to Blob:', error);
+            return null;
+        }
     };
 
     useEffect(() => {
@@ -214,17 +239,16 @@ const EditStory = () => {
                             😎사진 고르기😎
                         </Button>
                         <div className="image-preview-container">
-                            <img
-                                src={previewURLs[currentImageIndex]}
-                                alt="Preview"
-                                className="preview-image"
-                            />
+                            {previewImages.length > 0 && (
+                                <img
+                                    src={previewImages[currentImageIndex]}
+                                    alt={`Story image ${currentImageIndex + 1}`}
+                                />
+                            )}
                         </div>
                         <div className="image-nav-buttons">
-                            <Button className="nav-button" onClick={handlePrevImage}
-                                    disabled={images.length <= 1}>⬅️</Button>
-                            <Button className="nav-button" onClick={handleNextImage}
-                                    disabled={images.length <= 1}>➡️</Button>
+                            <Button className="nav-button" onClick={handlePrevImage}>⬅️</Button>
+                            <Button className="nav-button" onClick={handleNextImage}>➡️</Button>
                         </div>
                     </div>
                 </div>

@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../../css/OauthUserInfoPage.css';
-
-axios.defaults.withCredentials = true;
+import instance from "../main/axios/TokenInterceptor";
 
 const Settings = () => {
-    const accessToken = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
@@ -22,11 +19,12 @@ const Settings = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/user/info', {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
+                // const response = await axios.get('http://localhost:8080/user/info', {
+                //     headers: {
+                //         Authorization: `Bearer ${accessToken}`
+                //     }
+                // });
+                const response = await instance.get('http://localhost:8080/user/info');
 
                 const { email, name, birth, gender, age, location, imageUrl } = response.data;
                 setEmail(email || '');
@@ -54,11 +52,14 @@ const Settings = () => {
 
     const fetchProfileImage = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/userImage/upload`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                },
-                responseType: 'blob', // 이미지를 바이너리 형식으로 받아옴
+            // const response = await axios.get(`http://localhost:8080/userImage/upload`, {
+            //     headers: {
+            //         Authorization: `Bearer ${accessToken}`
+            //     },
+            //     responseType: 'blob', // 이미지를 바이너리 형식으로 받아옴
+            // });
+            const response = await instance.get('http://localhost:8080/userImage/upload', {
+                responseType : 'blob'
             });
 
             const imageBlob = response.data;
@@ -72,17 +73,25 @@ const Settings = () => {
 
     const handleUserInfo = async () => {
         try {
-            await axios.post('http://localhost:8080/user/info', {
+            // await axios.post('http://localhost:8080/user/info', {
+            //     email,
+            //     name,
+            //     birth,
+            //     gender,
+            //     age,
+            //     location
+            // }, {
+            //     headers: {
+            //         Authorization: `Bearer ${accessToken}`
+            //     }
+            // });
+            await instance.post('http://localhost:8080/user/info', {
                 email,
                 name,
                 birth,
                 gender,
                 age,
                 location
-            }, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
             });
 
             alert("정보 수정 성공!");
@@ -105,9 +114,15 @@ const Settings = () => {
         formData.append('imageFile', newImage);
 
         try {
-            await axios.post('http://localhost:8080/userImage/update', formData, {
+            // await axios.post('http://localhost:8080/userImage/update', formData, {
+            //     headers: {
+            //         'Authorization': `Bearer ${accessToken}`,
+            //         'Content-Type': 'multipart/form-data'
+            //     }
+            // });
+
+            await instance.post('http://localhost:8080/userImage/update', formData, {
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });

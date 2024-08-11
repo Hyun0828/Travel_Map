@@ -1,12 +1,8 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import axios from "axios";
-import {Overlay, useMap, useNavermaps} from "react-naver-maps";
+import {useNavermaps} from "react-naver-maps";
 import {DataContext} from "../../contexts/DataContext";
 import "../../css/Map.css";
-import MarkerClustering from "../main/cluster/MarkerClustering";
-
-
-axios.defaults.withCredentials = true;
+import instance from "../main/axios/TokenInterceptor";
 
 const Map = () => {
     const {totalDataArray, setTotalDataArray} = useContext(DataContext);
@@ -19,8 +15,6 @@ const Map = () => {
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);  // 브라우저의 현재 너비
     const navermaps = useNavermaps();
 
-    const accessToken = localStorage.getItem('accessToken');
-
     /**
      * DB에서 전체 일기를 가져와서 totalDataArray를 채우는 로직
      */
@@ -28,11 +22,13 @@ const Map = () => {
         const fetchData = async () => {
             setTotalDataArray([]);
             try {
-                const response = await axios.get("http://localhost:8080/story/all", {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
+                // const response = await axios.get("http://localhost:8080/story/all", {
+                //     headers: {
+                //         'Authorization': `Bearer ${accessToken}`
+                //     }
+                // });
+                const response = await instance.get('http://localhost:8080/story/all');
+
                 const storyInfoResponseDtos = response.data;
 
                 for (const dto of storyInfoResponseDtos) {
@@ -385,54 +381,6 @@ const Map = () => {
         // setSortedDomData(newArray);
     };
 
-
-    // const MarkerCluster = () => {
-    //
-    //     const {htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5} = useGetClusterIcon(navermaps); // 클러스트 아이콘 DOM 리스트
-    //
-    //     const getCluster = () => {
-    //
-    //         const cluster = new MarkerClustering({
-    //             minClusterSize: 2,
-    //             maxZoom: 14, // 조절하면 클러스터링이 되는 기준이 달라짐 (map zoom level)
-    //             map: mapElement.current,
-    //             markers: createMarkerList.current,
-    //             disableClickZoom: false,
-    //             gridSize: 120,
-    //             icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
-    //             indexGenerator: [5, 10, 15, 20, 30],
-    //             stylingFunction: function (clusterMarker, count) {
-    //                 clusterMarker.getElement().querySelector('div:first-child').innerText = count;
-    //             },
-    //         });
-    //
-    //         return cluster;
-    //     };
-    //
-    //     const [cluster] = useState(getCluster());
-    //
-    //     return <Overlay element={cluster}/>;
-    // }
-    //
-    // /**
-    //  * 마커 클러스터링 아이콘 생성
-    //  */
-    // const useGetClusterIcon = (navermaps) => {
-    //     const createClusterIcon = (url) => ({
-    //         content: `<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(${url});background-size:contain;"></div>`,
-    //         size: navermaps.Size(40, 40),
-    //         anchor: navermaps.Point(20, 20),
-    //     });
-    //
-    //     return {
-    //         htmlMarker1: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-1.png'),
-    //         htmlMarker2: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-2.png'),
-    //         htmlMarker3: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-3.png'),
-    //         htmlMarker4: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-4.png'),
-    //         htmlMarker5: createClusterIcon('https://navermaps.github.io/maps.js.ncp/docs/img/cluster-marker-5.png'),
-    //     };
-    // };
-
     return (
         <div className="map-container">
             <div className="map-header">
@@ -446,7 +394,6 @@ const Map = () => {
             {/*    Reset List*/}
             {/*</button>*/}
             <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}>
-                {/*<MarkerCluster/>*/}
             </div>
         </div>
     );
