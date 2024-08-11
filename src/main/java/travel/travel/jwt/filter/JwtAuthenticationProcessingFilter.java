@@ -1,5 +1,6 @@
 package travel.travel.jwt.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import travel.travel.jwt.util.PasswordUtil;
 import travel.travel.repository.UserRepository;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Jwt 인증 필터
@@ -82,13 +84,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 //                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
 //                        .ifPresent(email -> userRepository.findByEmail(email)
 //                                .ifPresent(this::saveAuthentication)));
-
-        log.info("1");
         String accessToken = jwtService.extractAccessToken(request).orElse(null);
 
         if (accessToken == null) {
             log.info("2");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 없습니다");
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "토큰이 없습니다");
             return;
         }
 
@@ -98,13 +98,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             jwtService.extractEmail(accessToken)
                     .ifPresent(email -> userRepository.findByEmail(email)
                             .ifPresent(this::saveAuthentication));
-        } catch (TokenExpiredException | TokenInvalidException e) {
+        } catch (TokenInvalidException e) {
             log.info("4");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
             return;
         } catch (RuntimeException e) {
             log.info("5");
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 오류 : " + e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 오류 : " + e.getMessage());
             return;
         }
 
@@ -148,5 +148,42 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                         authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    // 오류 정보 {status, message}를 JSON 형태로 바꿔서 응답
+    private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
+        response.setStatus(statusCode);
+        response.setContentType("application/json; charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        ObjectMapper mapper = new ObjectMapper();
+        ErrorResponse errorResponse = new ErrorResponse(statusCode, message);
+        mapper.writeValue(out, errorResponse);
+    }
+
+    public static class ErrorResponse {
+        private int status;
+        private String message;
+
+        // Constructors, getters, and setters
+        public ErrorResponse(int status, String message) {
+            this.status = status;
+            this.message = message;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }

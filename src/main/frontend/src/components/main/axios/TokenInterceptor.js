@@ -9,6 +9,7 @@ instance.interceptors.request.use(function (config) {
 
     // 로컬 스토리지에서 accessToken을 가져온다
     const accessToken = localStorage.getItem('accessToken');
+    console.log(accessToken);
 
     // accessToken이 있으면 요청 헤더에 추가한다.
     if (accessToken)
@@ -32,28 +33,42 @@ instance.interceptors.response.use(async function (response) {
     // 응답 오류가 있는 작업 수행
     // 2xx 범위 밖에 있는 상태 코드인 경우
 
-    const {config, response: {status, data}} = error;
+    const {config, response} = error;
+
+    // console.log(error);
+    // console.log(response);
+
+    if (!response) {
+        console.error('Network or server error', error);
+        return Promise.reject(error);
+    }
+
+    const {status, data} = response;
+    // console.log('Error status:', status);
+    // console.log('Error data:', data);
+
     if (status === 401) {
-        if (data.messages === "토큰이 없습니다" || data.messages === "유효하지 않은 토큰") {
-            console.log(data.messages);
+        if (data.message === "토큰이 없습니다") {
+            // console.log(data.message);
             await Logout();
         }
-        if (data.messages === "토큰 만료") {
+        if (data.message === "유효하지 않은 토큰") {
             try {
-                console.log(data.messages);
+                // console.log(data.message);
                 const tokenReissueResult = await instance.post('http://localhost:8080/reissue');
                 if (tokenReissueResult.status === 200) {
                     // 재발급 성공시 로컬스토리지에 토큰 저장
-                    const {accessToken} = tokenReissueResult.data;
+                    const accessToken = tokenReissueResult.headers['authorization'] || tokenReissueResult.headers['Authorization'];
                     localStorage.setItem('accessToken', accessToken);
                     // 토큰 재발급 성공, API 재요청
+                    console.log("토큰 재발급 성공");
                     return instance(config)
                 } else {
-                    console.log(data.messages);
+                    // console.log(data.message);
                     await Logout();
                 }
             } catch (e) {
-                console.log(data.messages);
+                // console.log(data.message);
                 await Logout();
             }
         }

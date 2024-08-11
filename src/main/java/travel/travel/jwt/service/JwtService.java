@@ -21,6 +21,7 @@ import travel.travel.repository.RefreshRepository;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +62,7 @@ public class JwtService {
                 //클레임으로는 저희는 email 하나만 사용합니다.
                 //추가적으로 식별자나, 이름 등의 정보를 더 추가하셔도 됩니다.
                 //추가하실 경우 .withClaim(클래임 이름, 클래임 값) 으로 설정해주시면 됩니다
+                .withClaim("unique_id", UUID.randomUUID().toString())
                 .withClaim(EMAIL_CLAIM, email)
                 .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용, application-jwt.yml에서 지정한 secret 키로 암호화
     }
@@ -74,6 +76,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(REFRESH_TOKEN_SUBJECT)
                 .withExpiresAt(new Date(now.getTime() + refreshTokenExpirationPeriod))
+                .withClaim("unique_id", UUID.randomUUID().toString())
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
@@ -184,8 +187,6 @@ public class JwtService {
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC512(secretKey)).build();
             DecodedJWT decodedJWT = verifier.verify(token);
-        } catch (TokenExpiredException e) {
-            throw new TokenExpiredException("토큰 만료");
         } catch (JWTVerificationException e) {
             throw new TokenInvalidException("유효하지 않은 토큰");
         } catch (Exception e) {

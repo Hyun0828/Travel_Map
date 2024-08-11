@@ -42,8 +42,11 @@ public class ReIssueController {
 
         // 새로운 accessToken, refreshToken 발급
         String email = refreshRepository.findByRefresh(refreshToken.get()).get().getEmail();
+        System.out.println("email = " + email);
         String new_accessToken = jwtService.createAccessToken(email); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
+        System.out.println("new_accessToken = " + new_accessToken);
         String new_refreshToken = jwtService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
+        System.out.println("new_refreshToken = " + new_refreshToken);
 
         jwtService.sendAccessAndRefreshToken(response, new_accessToken, new_refreshToken); // 응답 헤더에 AccessToken, 응답 쿠키에 RefreshToken 실어서 응답
         jwtService.deleteRefreshToken(refreshToken.get());      // DB에 기존 refreshToken 삭제
