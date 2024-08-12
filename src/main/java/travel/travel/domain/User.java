@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import travel.travel.dto.user.UserInfoRequestDto;
 import travel.travel.dto.user.UserRequest;
 
 import java.time.LocalDate;

@@ -15,7 +15,7 @@ public class StoryRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StoryCreateRequestDTO{
+    public static class StoryCreateRequestDTO {
         private String title;
         private String content;
         private String place;
@@ -27,7 +27,7 @@ public class StoryRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StoryImageRequestDTO{
+    public static class StoryImageRequestDTO {
         private List<MultipartFile> multipartFile;
     }
 
@@ -35,7 +35,7 @@ public class StoryRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StoryUpdateRequestDTO{
+    public static class StoryUpdateRequestDTO {
         private String title;
         private String content;
         private String place;

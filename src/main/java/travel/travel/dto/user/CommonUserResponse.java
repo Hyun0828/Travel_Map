@@ -11,7 +11,7 @@ public class CommonUserResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CommonUserIdResponseDTO{
+    public static class CommonUserIdResponseDTO {
         private Long userId;
     }
 }

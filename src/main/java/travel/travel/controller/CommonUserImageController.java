@@ -22,7 +22,6 @@ public class CommonUserImageController {
     public ApiResponse<Void> update(@RequestPart("imageFile") MultipartFile imageFile,
                                     @RequestHeader("Authorization") String authorizationHeader) throws IOException {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        userImageService.delete(accessToken);
         userImageService.update(accessToken, imageFile);
         return ApiResponse.onSuccess(null);
     }

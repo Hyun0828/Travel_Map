@@ -13,7 +13,7 @@ public class StoryResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StoryInfoResponseDTO{
+    public static class StoryInfoResponseDTO {
         private Long id;
         private String title;
         private String content;

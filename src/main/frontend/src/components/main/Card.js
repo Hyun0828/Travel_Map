@@ -1,5 +1,5 @@
 import "../../css/card.scss"
-import {useNavigate, useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import axios from "axios";
 
 axios.defaults.withCredentials = true;

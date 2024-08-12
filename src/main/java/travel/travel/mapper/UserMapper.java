@@ -3,7 +3,6 @@ package travel.travel.mapper;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
-import travel.travel.dto.user.UserInfoResponseDto;
 import travel.travel.dto.user.UserResponse;
 
 public class UserMapper {

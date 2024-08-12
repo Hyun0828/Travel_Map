@@ -13,7 +13,7 @@ public class CommonUserRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CommonUserSignUpRequestDTO{
+    public static class CommonUserSignUpRequestDTO {
         private String email;
         private String password;
         private String name;

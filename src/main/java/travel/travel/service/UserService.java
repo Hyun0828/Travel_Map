@@ -4,8 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.User;
-import travel.travel.dto.user.UserInfoRequestDto;
-import travel.travel.dto.user.UserInfoResponseDto;
 import travel.travel.dto.user.UserRequest;
 import travel.travel.dto.user.UserResponse;
 import travel.travel.jwt.service.JwtService;

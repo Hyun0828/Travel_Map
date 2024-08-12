@@ -3,7 +3,6 @@ package travel.travel.oauth.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import travel.travel.apiPayload.ApiResponse;
 import travel.travel.domain.Role;

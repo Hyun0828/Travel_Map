@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.RefreshToken;
 import travel.travel.exception.TokenInvalidException;
-import travel.travel.exception.TokenExpiredException;
 import travel.travel.repository.CommonUserRepository;
 import travel.travel.repository.RefreshRepository;
 

@@ -17,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
-import travel.travel.exception.TokenExpiredException;
 import travel.travel.exception.TokenInvalidException;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.jwt.util.PasswordUtil;

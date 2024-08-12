@@ -33,7 +33,7 @@ const App = () => {
                                     </div>
                                 </div>
                             }
-                            />
+                        />
                     </Routes>
                 </BrowserRouter>
             </DataProvider>

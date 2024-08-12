@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import travel.travel.dto.story.StoryRequest;
-import travel.travel.dto.story.StoryUpdateRequestDto;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

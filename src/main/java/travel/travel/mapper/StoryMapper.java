@@ -1,8 +1,6 @@
 package travel.travel.mapper;
 
 import travel.travel.domain.Story;
-import travel.travel.dto.story.StoryCreateRequestDto;
-import travel.travel.dto.story.StoryInfoResponseDto;
 import travel.travel.dto.story.StoryRequest;
 import travel.travel.dto.story.StoryResponse;
 

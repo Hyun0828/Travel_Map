@@ -10,7 +10,6 @@ import travel.travel.jwt.service.JwtService;
 import travel.travel.repository.UserImageRepository;
 import travel.travel.repository.UserRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,19 +49,6 @@ public class UserImageService {
         }
     }
 
-    @Transactional
-    public void delete(String accessToken) {
-        String email = jwtService.extractEmail(accessToken).orElseThrow(() -> new IllegalStateException("유효하지 않은 토큰입니다."));
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NullPointerException("해당하는 사용자가 없습니다."));
-
-        Path currentPath = Paths.get("").toAbsolutePath();
-        String imageUrl = currentPath + user.getUserImage().getUrl();
-        File deleteFile = new File(imageUrl);
-        if (deleteFile.exists())
-            deleteFile.delete();
-
-        userImageRepository.deleteById(user.getUserImage().getId());
-    }
 
     public String upload(String accessToken) {
         String email = jwtService.extractEmail(accessToken).orElseThrow(() -> new IllegalStateException("유효하지 않은 토큰입니다."));

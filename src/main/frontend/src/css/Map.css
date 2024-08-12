@@ -6,7 +6,7 @@
     flex-direction: column; /* Stack elements vertically */
     align-items: center;
 
-    .map-header{
+    .map-header {
         color: midnightblue;
         font-weight: bold;
         font-size: 2rem;

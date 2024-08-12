@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import travel.travel.domain.User;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
