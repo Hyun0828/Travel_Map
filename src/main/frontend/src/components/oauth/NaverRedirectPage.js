@@ -13,16 +13,22 @@ const NaverRedirectPage = () => {
             const response = await axios.get(`http://localhost:8080/oauth/login/naver?code=${code}`, {
             });
             // 응답 헤더에서 AccessToken 추출
-            const accessToken = response.headers['Authorization'] || response.headers['authorization'];
-            const role = response.data;
+            if (response.data.isSuccess) {
+                const accessToken = response.headers['Authorization'] || response.headers['authorization'];
+                const role = response.data.result;
 
-            alert("로그인 성공: " + role);
-            localStorage.setItem('accessToken', accessToken);
+                alert("로그인 성공: " + role);
+                localStorage.setItem('accessToken', accessToken);
 
-            if (role === "GUEST") {
-                navigate("/oauth/user/info");
-            } else if (role === "USER") {
-                navigate("/main/map"); // 메인페이지로 이동
+                if (role === "GUEST") {
+                    navigate("/oauth/user/info");
+                } else if (role === "USER") {
+                    navigate("/main/map"); // 메인페이지로 이동
+                }
+            } else {
+                console.error("OAuth2 로그인 오류")
+                console.log(response.data.code);
+                console.log(response.data.message);
             }
         } catch (error) {
             console.error("로그인 실패", error);

@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from "react";
-import axios from "axios";
 import {Button, List, ListItem, ListItemText, TextField} from "@mui/material";
 import Calendar from 'react-calendar';
-import {addDays, format, formatISO} from 'date-fns';
+import {format} from 'date-fns';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/Write.css';
 import {useNavigate} from "react-router-dom";
@@ -24,24 +23,21 @@ const Write = () => {
     const handleSearch = async (text) => {
         if (text && typeof text === 'string' && text.trim() !== "") {
             try {
-                // const response = await axios.get("http://localhost:8080/naver/search", {
-                //     params: {text},
-                //     headers: {
-                //         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
-                //         "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET,
-                //         Authorization: `Bearer ${accessToken}`
-                //     }
-                // });
                 const response = await instance.get('http://localhost:8080/naver/search', {
-                    params:{text},
-                    headers:{
+                    params: {text},
+                    headers: {
                         "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
                         "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET
                     }
                 });
-
-                console.log("Search results:", response.data.items);
-                setSearchResults(response.data.items);
+                if (response.data.isSuccess) {
+                    const result = JSON.parse(response.data.result); // JSON 파싱
+                    setSearchResults(result.items);
+                } else {
+                    console.error("네이버 검색 api 에러")
+                    console.log(response.data.code);
+                    console.log(response.data.message);
+                }
             } catch (error) {
                 console.error("Error fetching data: ", error);
                 setSearchResults([]);
@@ -94,27 +90,29 @@ const Write = () => {
             }));
 
             try {
-                // await axios.post("http://localhost:8080/story", formData, {
-                //     headers: {
-                //         "Content-Type": "multipart/form-data",
-                //         Authorization: `Bearer ${accessToken}`
-                //     }
-                // });
-
-                await instance.post('http://localhost:8080/story', formData, {
+                const response = await instance.post('http://localhost:8080/story', formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     }
                 })
-                setTitle("");
-                setDate(new Date());
-                setLocation("");
-                setLocationObj(null);
-                setContent("");
-                setImages([]);
-                setPreviewURLs(['/images/anonymous.png']);
 
-                navigate("/main/map");
+                if (response.data.isSuccess) {
+                    setTitle("");
+                    setDate(new Date());
+                    setLocation("");
+                    setLocationObj(null);
+                    setContent("");
+                    setImages([]);
+                    setPreviewURLs(['/images/anonymous.png']);
+
+                    navigate("/main/map");
+                } else {
+                    console.error("일기 작성 실패");
+                    console.log(response.data.code);
+                    console.log(response.data.message);
+                }
+
+
             } catch (error) {
                 console.error("Error submitting form: ", error);
             }

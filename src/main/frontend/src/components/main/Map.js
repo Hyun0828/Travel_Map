@@ -8,7 +8,6 @@ const Map = () => {
     const {totalDataArray, setTotalDataArray} = useContext(DataContext);
     const [AddressX, setAddressX] = useState(0);
     const [AddressY, setAddressY] = useState(0);
-    const [searchKeyword, setSearchKeyword] = useState('');
     const mapElement = useRef(null);
     const createMarkerList = useRef([]);     // 마커를 담을 배열
     const infoWindowList = useRef([]);          // 정보창을 담을 배열
@@ -22,18 +21,18 @@ const Map = () => {
         const fetchData = async () => {
             setTotalDataArray([]);
             try {
-                // const response = await axios.get("http://localhost:8080/story/all", {
-                //     headers: {
-                //         'Authorization': `Bearer ${accessToken}`
-                //     }
-                // });
                 const response = await instance.get('http://localhost:8080/story/all');
+                if (response.data.isSuccess) {
+                    const storyInfoResponseDtos = response.data.result;
 
-                const storyInfoResponseDtos = response.data;
-
-                for (const dto of storyInfoResponseDtos) {
-                    const {id, title, content, place, address, date} = dto;
-                    await handleGeocode(id, title, content, place, address, date);
+                    for (const dto of storyInfoResponseDtos) {
+                        const {id, title, content, place, address, date} = dto;
+                        await handleGeocode(id, title, content, place, address, date);
+                    }
+                } else {
+                    console.error('일기 불러오기 오류');
+                    console.log(response.data.code);
+                    console.log(response.data.message);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -100,28 +99,6 @@ const Map = () => {
     }, []);
 
     /**
-     * 검색 키워드로 좌표 검색
-     */
-    useEffect(() => {
-        if (searchKeyword) {
-            window.naver.maps.Service.geocode(
-                {query: searchKeyword},
-                function (status, res) {
-                    if (res.v2.addresses.length === 0) {
-                        console.error('No addresses found for the given keyword');
-                    } else {
-                        const resAddress = res.v2.addresses[0];
-                        const x = parseFloat(resAddress.x);
-                        const y = parseFloat(resAddress.y);
-                        setAddressX(x);
-                        setAddressY(y);
-                    }
-                }
-            );
-        }
-    }, [searchKeyword]);
-
-    /**
      * 지도 초기화 및 업데이트
      */
     useEffect(() => {
@@ -150,15 +127,6 @@ const Map = () => {
         // 검색 결과 거리순으로 재정렬
         // resetListHandler();
     }, [AddressX, AddressY, viewportWidth, totalDataArray]);
-
-    /**
-     * 검색 키워드 입력 처리
-     */
-    const handleSearch = (e) => {
-        e.preventDefault();
-        const keyword = e.target.elements.keyword.value;
-        setSearchKeyword(keyword);
-    };
 
     /**
      * 지도가 새롭게 그려질 때 이벤트 리스너를 등록하고 컴포넌트가 언마운트될 때 이벤트 리스너 해제
@@ -358,41 +326,11 @@ const Map = () => {
         }
     };
 
-    useEffect(() => {
-        resetListHandler();
-    }, [mapElement.current]);
-
-    // 리셋 버튼 핸들러
-    const resetListHandler = () => {
-        if (!mapElement.current) return;
-        const newArray = [...totalDataArray].sort((a, b) => {
-            const currentCenterLatLng = mapElement.current.getCenter();
-            const LatLngA = new window.naver.maps.LatLng(a.lat, a.lng);
-            const LatLngB = new window.naver.maps.LatLng(b.lat, b.lng);
-            const projection = mapElement.current.getProjection();
-            const distanceA = projection.getDistance(currentCenterLatLng, LatLngA);
-            const distanceB = projection.getDistance(currentCenterLatLng, LatLngB);
-
-            if (distanceA < distanceB) return -1;
-            else if (distanceA > distanceB) return 1;
-            else return 0;
-        });
-
-        // setSortedDomData(newArray);
-    };
-
     return (
         <div className="map-container">
             <div className="map-header">
                 <p>일기 지도 🗺</p>
             </div>
-            {/*<form onSubmit={handleSearch}>*/}
-            {/*    <input type="text" name="keyword" placeholder="Enter a location"/>*/}
-            {/*    <button type="submit">Search</button>*/}
-            {/*</form>*/}
-            {/*<button onClick={() => resetListHandler()}>*/}
-            {/*    Reset List*/}
-            {/*</button>*/}
             <div id='map' ref={mapElement} style={{width: '100%', height: '100%'}}>
             </div>
         </div>

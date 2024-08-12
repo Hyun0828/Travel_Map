@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import '../css/SignUpPage.css';
-import {toast, ToastContainer} from "react-toastify";
 
 axios.defaults.withCredentials = true;
 
@@ -28,16 +27,32 @@ const SignUpPage = () => {
                 age,
                 location
             });
-            console.log("회원가입 성공", response.data);
-            alert("회원가입 성공!");
-            navigate("/"); // 로그인 페이지로 이동
+
+            if (response.data.isSuccess) {
+                alert("회원가입 성공!");
+                navigate("/"); // 로그인 페이지로 이동
+            } else {
+                // 성공이 아니지만 통신 에러는 발생하지 않은 경우 처리
+                setError(response.data.message || "회원가입 실패: 알 수 없는 오류가 발생했습니다.");
+                console.error("회원가입 실패:", response.data);
+            }
         } catch (error) {
             if (error.response && error.response.data) {
-                setError(error.response.data);
+                // 서버로부터 응답이 있는 경우
+                const errorData = error.response.data;
+                if (errorData.isSuccess === false) {
+                    // isSuccess가 false인 경우에 대한 처리
+                    setError(errorData.message || "회원가입 실패: 알 수 없는 오류가 발생했습니다.");
+                } else {
+                    setError("회원가입 실패: 서버에서 잘못된 응답을 받았습니다.");
+                }
+
+                console.error("회원가입 실패:", errorData);
             } else {
+                // 서버로부터 응답이 없는 경우 또는 다른 오류
                 setError("회원가입 실패: 서버와의 통신에 실패했습니다.");
+                console.error("회원가입 실패:", error.message);
             }
-            console.error("회원가입 실패:", error.response ? error.response.data : error.message);
         }
     };
 

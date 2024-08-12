@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -70,8 +71,11 @@ public class StoryImageService {
 
             for (MultipartFile imageFile : imageFiles) {
                 if (!imageFile.isEmpty()) {
-                    String fileName = imageFile.getOriginalFilename(); // 파일 이름 : 고유식별번호 + 원래 이름
-
+                    String fileName = null;
+                    if (Objects.equals(imageFile.getOriginalFilename(), "blob"))
+                        fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename(); // 파일 이름 : 고유식별번호 + 원래 이름
+                    else
+                        fileName = imageFile.getOriginalFilename();
                     Path filePath = saveImagesPath.resolve(fileName); // 파일 경로 : 해당 폴더 + 파일 이름
                     imageFile.transferTo(filePath.toFile()); // 파일 경로 => 파일 변환 후 해당 경로에 파일 저장
 
@@ -100,11 +104,8 @@ public class StoryImageService {
     public String uploadImage(Long storyId) {
         Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
 
-        if (!story.getImages().isEmpty()) {
-            String imageUrl = story.getImages().get(0).getImageUrl();
-            return imageUrl.substring("/saveimages/".length());
-        } else
-            return "markerIcon.png";
+        String imageUrl = story.getImages().get(0).getImageUrl();
+        return imageUrl.substring("/saveimages/".length());
     }
 
     public List<String> uploadImages(Long storyId) {

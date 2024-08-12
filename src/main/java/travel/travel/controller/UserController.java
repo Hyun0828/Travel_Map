@@ -1,10 +1,10 @@
 package travel.travel.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import travel.travel.dto.user.UserInfoRequestDto;
-import travel.travel.dto.user.UserInfoResponseDto;
+import travel.travel.apiPayload.ApiResponse;
+import travel.travel.dto.user.UserRequest;
+import travel.travel.dto.user.UserResponse;
 import travel.travel.service.UserService;
 
 @RestController
@@ -18,21 +18,20 @@ public class UserController {
      * 유저 정보 불러오기
      */
     @GetMapping("/info")
-    public ResponseEntity<UserInfoResponseDto> info(@RequestHeader("Authorization") String authorizationHeader) {
+    public ApiResponse<UserResponse.UserInfoResponseDTO> info(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        UserInfoResponseDto userInfoResponseDto = userService.info(accessToken);
-        return ResponseEntity.ok(userInfoResponseDto);
+        System.out.println("accessToken = " + accessToken);
+        UserResponse.UserInfoResponseDTO userInfoResponseDto = userService.info(accessToken);
+        return ApiResponse.onSuccess(userInfoResponseDto);
     }
 
     /**
      * 유저 정보 업데이트하기
      */
     @PostMapping("/info")
-    public ResponseEntity<Void> info(@RequestHeader("Authorization") String authorizationHeader, @RequestBody UserInfoRequestDto userInfoRequestDto) {
+    public ApiResponse<Void> info(@RequestHeader("Authorization") String authorizationHeader, @RequestBody UserRequest.UserInfoRequestDTO userInfoRequestDto) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
         userService.update(accessToken, userInfoRequestDto);
-        return ResponseEntity.ok().build();
+        return ApiResponse.onSuccess(null);
     }
-
-
 }

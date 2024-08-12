@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import travel.travel.dto.story.StoryRequest;
 import travel.travel.dto.story.StoryUpdateRequestDto;
 
 import java.time.LocalDate;
@@ -41,10 +42,6 @@ public class Story extends BaseEntity {
     @Builder.Default
     private List<StoryImage> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "story", cascade = CascadeType.REMOVE)
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<>();
-
     public void addImage(StoryImage image) {
         if (!images.contains(image))
             images.add(image);
@@ -56,7 +53,7 @@ public class Story extends BaseEntity {
         image.setStory(null);
     }
 
-    public void update(StoryUpdateRequestDto storyUpdateRequestDto) {
+    public void update(StoryRequest.StoryUpdateRequestDTO storyUpdateRequestDto) {
         this.title = storyUpdateRequestDto.getTitle();
         this.content = storyUpdateRequestDto.getContent();
         this.place = storyUpdateRequestDto.getPlace();

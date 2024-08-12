@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import travel.travel.dto.user.UserInfoRequestDto;
+import travel.travel.dto.user.UserRequest;
 
 import java.time.LocalDate;
 
@@ -44,7 +45,7 @@ public abstract class User extends BaseEntity {
     }
 
     // 개인 정보 업데이트 메소드
-    public void update(UserInfoRequestDto userInfoRequestDto) {
+    public void update(UserRequest.UserInfoRequestDTO userInfoRequestDto) {
         this.email = userInfoRequestDto.getEmail();
         this.name = userInfoRequestDto.getName();
         this.birth = userInfoRequestDto.getBirth();

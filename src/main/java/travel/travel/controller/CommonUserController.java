@@ -1,11 +1,11 @@
 package travel.travel.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import travel.travel.dto.user.CommonUserIdResponseDto;
-import travel.travel.dto.user.CommonUserSignUpRequestDto;
-import travel.travel.repository.RefreshRepository;
+import travel.travel.apiPayload.ApiResponse;
+import travel.travel.apiPayload.code.status.ErrorStatus;
+import travel.travel.dto.user.CommonUserRequest;
+import travel.travel.dto.user.CommonUserResponse;
 import travel.travel.service.CommonUserService;
 
 @RestController
@@ -13,18 +13,22 @@ import travel.travel.service.CommonUserService;
 public class CommonUserController {
 
     private final CommonUserService commonUserService;
-    private final RefreshRepository refreshRepository;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<CommonUserIdResponseDto> signUp(@RequestBody CommonUserSignUpRequestDto commonUserSignUpRequestDto) throws Exception {
-        CommonUserIdResponseDto commonUserIdResponseDto = commonUserService.signUp(commonUserSignUpRequestDto);
-        return ResponseEntity.ok(commonUserIdResponseDto);
+    public ApiResponse<CommonUserResponse.CommonUserIdResponseDTO> signUp(@RequestBody CommonUserRequest.CommonUserSignUpRequestDTO commonUserSignUpRequestDto) throws Exception {
+
+        try {
+            CommonUserResponse.CommonUserIdResponseDTO commonUserIdResponseDto = commonUserService.signUp(commonUserSignUpRequestDto);
+            return ApiResponse.onSuccess(commonUserIdResponseDto);
+        } catch (Exception e) {
+            return ApiResponse.onFailure(ErrorStatus._USER_DUPLICATED.getCode(), ErrorStatus._USER_DUPLICATED.getMessage(), null);
+        }
     }
 
     @DeleteMapping("/sign-out")
-    public ResponseEntity<Void> signOut(@RequestHeader("Authorization") String authorizationHeader) {
+    public ApiResponse<Void> signOut(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
         commonUserService.signOut(accessToken);
-        return ResponseEntity.ok().build();
+        return ApiResponse.onSuccess(null);
     }
 }

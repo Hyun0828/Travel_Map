@@ -4,10 +4,11 @@ import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
 import travel.travel.dto.user.UserInfoResponseDto;
+import travel.travel.dto.user.UserResponse;
 
 public class UserMapper {
 
-    public static UserInfoResponseDto toUserInfoResponseDto(User user) {
+    public static UserResponse.UserInfoResponseDTO toUserInfoResponseDto(User user) {
 
         String dtype = null;
         if (user.getClass() == CommonUser.class)
@@ -15,7 +16,7 @@ public class UserMapper {
         else if (user.getClass() == OauthUser.class)
             dtype = "O";
 
-        return UserInfoResponseDto.builder()
+        return UserResponse.UserInfoResponseDTO.builder()
                 .email(user.getEmail())
                 .name(user.getName())
                 .birth(user.getBirth())

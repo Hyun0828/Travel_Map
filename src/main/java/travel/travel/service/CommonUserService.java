@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.UserImage;
 import travel.travel.dto.user.CommonUserIdResponseDto;
+import travel.travel.dto.user.CommonUserRequest;
+import travel.travel.dto.user.CommonUserResponse;
 import travel.travel.dto.user.CommonUserSignUpRequestDto;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.mapper.CommonUserMapper;
@@ -27,9 +29,9 @@ public class CommonUserService {
     private final UserImageRepository userImageRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CommonUserIdResponseDto signUp(CommonUserSignUpRequestDto commonUserSignUpRequestDto) throws Exception {
+    public CommonUserResponse.CommonUserIdResponseDTO signUp(CommonUserRequest.CommonUserSignUpRequestDTO commonUserSignUpRequestDto) throws Exception {
         if (commonUserRepository.findByEmail(commonUserSignUpRequestDto.getEmail()).isPresent())
-            throw new Exception("중복 이메일입니다");
+            throw new Exception();
 
         CommonUser commonUser = CommonUserMapper.toCommonUserFromCommonUserSignUpRequestDto(commonUserSignUpRequestDto);
 
@@ -43,7 +45,7 @@ public class CommonUserService {
         commonUserRepository.save(commonUser);
         userImageRepository.save(userImage);
 
-        return CommonUserIdResponseDto.builder().userId(commonUser.getId()).build();
+        return CommonUserResponse.CommonUserIdResponseDTO.builder().userId(commonUser.getId()).build();
     }
 
     /**

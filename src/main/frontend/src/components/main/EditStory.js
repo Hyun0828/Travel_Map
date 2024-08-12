@@ -34,8 +34,13 @@ const EditStory = () => {
                     }
                 });
 
-                console.log("Search results:", response.data.items);
-                setSearchResults(response.data.items);
+                if (response.data.isSuccess) {
+                    setSearchResults(response.data.items);
+                } else {
+                    console.error("네이버 검색 api 에러")
+                    console.log(response.data.code);
+                    console.log(response.data.message);
+                }
             } catch (error) {
                 console.error("Error fetching data: ", error);
                 setSearchResults([]);
@@ -75,35 +80,35 @@ const EditStory = () => {
      */
     useEffect(() => {
         const getStory = async () => {
-            // const {data} = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${accessToken}`
-            //     }
-            // });
-
-            const {data} = await instance.get(`http://localhost:8080/story?storyId=${story_id}`);
-
-            return data;
+            const response = await instance.get(`http://localhost:8080/story?storyId=${story_id}`);
+            if (response.data.isSuccess)
+                return response.data.result;
+            else {
+                console.error("일기 정보 가져오기 오류");
+                console.log(response.data.code);
+                console.log(response.data.message);
+                return null;
+            }
         }
 
         const getImages = async () => {
-            // const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${accessToken}`
-            //     }
-            // });
-
             const response = await instance.get(`http://localhost:8080/storyImages?storyId=${story_id}`);
-            const imageUrls = await Promise.all(
-                response.data.map(async (image) => {
-                    const imgResponse = await instance.get(`http://localhost:8080${image}`, {
-                        responseType: 'blob'
-                    });
-                    return URL.createObjectURL(imgResponse.data);
-                })
-            );
-            setPreviewImages(imageUrls);
-            setImages(imageUrls);
+            if (response.data.isSuccess) {
+                const imageUrls = await Promise.all(
+                    response.data.result.map(async (image) => {
+                        const imgResponse = await instance.get(`http://localhost:8080${image}`, {
+                            responseType: 'blob'
+                        });
+                        return URL.createObjectURL(imgResponse.data);
+                    })
+                );
+                setPreviewImages(imageUrls);
+                setImages(imageUrls);
+            } else {
+                console.error("일기 이미지 불러오기 오류");
+                console.log(response.data.code);
+                console.log(response.data.message);
+            }
         };
 
         getStory().then((result) => {
@@ -153,29 +158,28 @@ const EditStory = () => {
         }));
 
         try {
-            // await axios.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
-            //     headers: {
-            //         "Content-Type": "multipart/form-data",
-            //         Authorization: `Bearer ${accessToken}`
-            //     }
-            // });
-
-            await instance.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
+            const response = await instance.put(`http://localhost:8080/story?storyId=${story_id}`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
             })
+            if (response.data.isSuccess) {
+                setTitle("");
+                setDate(new Date());
+                setLocation("");
+                setLocationObj(null);
+                setContent("");
+                setImages([]);
+                setPreviewImages([]);
 
-            setTitle("");
-            setDate(new Date());
-            setLocation("");
-            setLocationObj(null);
-            setContent("");
-            setImages([]);
-            setPreviewImages([]);
+                window.alert("😎수정이 완료되었습니다😎");
+                navigate("/main/storyList?page=1");
+            } else {
+                console.error("일기 수정 실패");
+                console.log(response.data.code);
+                console.log(response.data.message);
+            }
 
-            window.alert("😎수정이 완료되었습니다😎");
-            navigate("/main/storyList?page=1");
         } catch (error) {
             console.error("Error submitting form: ", error);
         }

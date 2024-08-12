@@ -4,7 +4,6 @@ import {Button, Dialog, DialogContent, IconButton} from "@mui/material";
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import DisabledByDefaultOutlinedIcon from '@mui/icons-material/DisabledByDefaultOutlined';
-import axios from "axios";
 import "../../css/Story.scss";
 import instance from "../main/axios/TokenInterceptor";
 
@@ -22,31 +21,35 @@ const Story = () => {
 
     useEffect(() => {
         const getStory = async () => {
-            // const response = await axios.get(`http://localhost:8080/story?storyId=${story_id}`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${accessToken}`
-            //     }
-            // });
             const response = await instance.get(`http://localhost:8080/story?storyId=${story_id}`);
-            return response.data;
+            if (response.data.isSuccess)
+                return response.data.result;
+            else {
+                console.error("일기 정보 불러오기 오류");
+                console.log(response.data.code);
+                console.log(response.data.message);
+                return null;
+            }
         };
 
         const getImagesUrl = async () => {
-            // const response = await axios.get(`http://localhost:8080/storyImages?storyId=${story_id}`, {
-            //     headers: {
-            //         'Authorization': `Bearer ${accessToken}`
-            //     }
-            // });
             const response = await instance.get(`http://localhost:8080/storyImages?storyId=${story_id}`);
-            const imageUrls = await Promise.all(
-                response.data.map(async (image) => {
-                    const imgResponse = await instance.get(`http://localhost:8080${image}`, {
-                        responseType: 'blob'
-                    });
-                    return URL.createObjectURL(imgResponse.data);
-                })
-            );
-            setImages(imageUrls);
+            if (response.data.isSuccess) {
+                const imageUrls = await Promise.all(
+                    response.data.result.map(async (image) => {
+                        const imgResponse = await instance.get(`http://localhost:8080${image}`, {
+                            responseType: 'blob'
+                        });
+                        return URL.createObjectURL(imgResponse.data);
+                    })
+                );
+                setImages(imageUrls);
+            } else {
+                console.error("일기 이미지 불러오기 오류");
+                console.log(response.data.code);
+                console.log(response.data.message);
+            }
+
         };
 
         getStory().then(result => setStory(result)).then(() => setIsLoaded(true));
@@ -62,12 +65,12 @@ const Story = () => {
     };
 
     const deleteStory = async () => {
-        // await axios.delete(`http://localhost:8080/story?storyId=${story_id}`, {
-        //     headers : {
-        //         'Authorization' : `Bearer ${accessToken}`
-        //     }
-        // });
-        await instance.delete(`http://localhost:8080/story?storyId=${story_id}`);
+        const response = await instance.delete(`http://localhost:8080/story?storyId=${story_id}`);
+        if (!response.data.isSuccess) {
+            console.error("일기 삭제 오류");
+            console.log(response.data.code);
+            console.log(response.data.message);
+        }
     }
 
     return (
@@ -102,7 +105,7 @@ const Story = () => {
                         {images.length > 0 && (
                             <div className="image-carousel">
                                 <img src={images[currentImageIndex]}
-                                     alt={`Story image ${currentImageIndex + 1}`} />
+                                     alt={`Story image ${currentImageIndex + 1}`}/>
                                 <div className="image-navigation">
                                     <Button className="img_button" onClick={handlePrevImage}>&lt;</Button>
                                     <Button className="img_button" onClick={handleNextImage}>&gt;</Button>

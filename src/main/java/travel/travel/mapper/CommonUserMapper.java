@@ -2,11 +2,11 @@ package travel.travel.mapper;
 
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.Role;
-import travel.travel.dto.user.CommonUserSignUpRequestDto;
+import travel.travel.dto.user.CommonUserRequest;
 
 public class CommonUserMapper {
 
-    public static CommonUser toCommonUserFromCommonUserSignUpRequestDto(CommonUserSignUpRequestDto commonUserSignUpRequestDto) {
+    public static CommonUser toCommonUserFromCommonUserSignUpRequestDto(CommonUserRequest.CommonUserSignUpRequestDTO commonUserSignUpRequestDto) {
 
         return CommonUser.builder()
                 .email(commonUserSignUpRequestDto.getEmail())

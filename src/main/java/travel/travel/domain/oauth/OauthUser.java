@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import travel.travel.domain.Comment;
 import travel.travel.domain.User;
 
 import java.util.ArrayList;
@@ -37,6 +36,4 @@ public class OauthUser extends User {
     private OauthId oauthId;
     private String profileImageUrl;
 
-    @OneToMany(mappedBy = "writer")
-    private List<Comment> comments = new ArrayList<>();
 }

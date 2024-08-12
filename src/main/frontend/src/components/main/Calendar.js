@@ -134,18 +134,20 @@ export const Calendar = () => {
         const fetchData = async () => {
             setStoryList([]);
             try {
-                // const response = await axios.get("http://localhost:8080/story/all", {
-                //     headers: {
-                //         'Authorization': `Bearer ${accessToken}`
-                //     }
-                // });
                 const response = await instance.get('http://localhost:8080/story/all');
-                const storyInfoResponseDtos = response.data;
+                if (response.data.isSuccess) {
+                    const storyInfoResponseDtos = response.data.result;
 
-                for (const dto of storyInfoResponseDtos) {
-                    const {id, title, place, date} = dto;
-                    setStoryList(prevData => [...prevData, dto]);
+                    for (const dto of storyInfoResponseDtos) {
+                        const {id, title, place, date} = dto;
+                        setStoryList(prevData => [...prevData, dto]);
+                    }
+                } else {
+                    console.error("일기 가져오기 오류");
+                    console.log(response.data.code);
+                    console.log(response.data.message);
                 }
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
