@@ -14,6 +14,8 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
+import travel.travel.apiPayload.code.status.ErrorStatus;
+import travel.travel.apiPayload.exception.handler.AccessTokenHandler;
 import travel.travel.domain.CommonUser;
 import travel.travel.domain.User;
 import travel.travel.domain.oauth.OauthUser;
@@ -41,8 +43,6 @@ import java.io.PrintWriter;
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
-    private static final String NO_CHECK_URL = "/login"; // "/login"으로 들어오는 요청은 Filter 작동 X
-
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
@@ -50,11 +50,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        if (request.getRequestURI().equals(NO_CHECK_URL)) {
-//            log.debug("Request URI is /login, skipping filter.");
-//            filterChain.doFilter(request, response); // "/login" 요청이 들어오면, 다음 필터 호출
-//            return; // return으로 이후 현재 필터 진행 막기 (안 해주면 아래로 내려가서 계속 필터 진행시킴)
-//        }
         String path = request.getRequestURI();
         if (path.startsWith("/login") || path.startsWith("/oauth") || path.startsWith("/sign-up") || path.startsWith("/reissue") || path.startsWith("/google-login")) {
             log.debug("JWT Authentication Filter Skip");
@@ -83,31 +78,25 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 //                .ifPresent(accessToken -> jwtService.extractEmail(accessToken)
 //                        .ifPresent(email -> userRepository.findByEmail(email)
 //                                .ifPresent(this::saveAuthentication)));
-        String accessToken = jwtService.extractAccessToken(request).orElse(null);
 
+        String accessToken = jwtService.extractAccessToken(request).orElse(null);
         if (accessToken == null) {
-            log.info("2");
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "토큰이 없습니다");
             return;
         }
 
         try {
-            log.info("3");
             jwtService.isTokenValid(accessToken);
             jwtService.extractEmail(accessToken)
                     .ifPresent(email -> userRepository.findByEmail(email)
                             .ifPresent(this::saveAuthentication));
         } catch (TokenInvalidException e) {
-            log.info("4");
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
             return;
         } catch (RuntimeException e) {
-            log.info("5");
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 오류 : " + e.getMessage());
             return;
         }
-
-        log.info("6");
         filterChain.doFilter(request, response);
     }
 

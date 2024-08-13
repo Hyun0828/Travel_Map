@@ -34,27 +34,19 @@ instance.interceptors.response.use(async function (response) {
     // 2xx 범위 밖에 있는 상태 코드인 경우
 
     const {config, response} = error;
-
-    // console.log(error);
-    // console.log(response);
-
     if (!response) {
         console.error('Network or server error', error);
         return Promise.reject(error);
     }
 
     const {status, data} = response;
-    // console.log('Error status:', status);
-    // console.log('Error data:', data);
-
+    console.log(response);
     if (status === 401) {
         if (data.message === "토큰이 없습니다") {
-            // console.log(data.message);
             await Logout();
         }
         if (data.message === "유효하지 않은 토큰") {
             try {
-                // console.log(data.message);
                 const tokenReissueResult = await instance.post('http://localhost:8080/reissue');
                 if (tokenReissueResult.status === 200) {
                     // 재발급 성공시 로컬스토리지에 토큰 저장
@@ -64,11 +56,9 @@ instance.interceptors.response.use(async function (response) {
                     console.log("토큰 재발급 성공");
                     return instance(config)
                 } else {
-                    // console.log(data.message);
                     await Logout();
                 }
             } catch (e) {
-                // console.log(data.message);
                 await Logout();
             }
         }

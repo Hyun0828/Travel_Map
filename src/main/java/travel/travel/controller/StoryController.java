@@ -32,7 +32,7 @@ public class StoryController {
                                     @RequestHeader("Authorization") String authorizationHeader) throws IOException {
 
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        Long storyId = storyService.create(accessToken, storyCreateRequestDto);
+        Long storyId = storyService.create(storyCreateRequestDto);
         writingService.save(accessToken, storyId);
         storyImageService.create(storyId, imageFiles);
         return ApiResponse.onSuccess(null);

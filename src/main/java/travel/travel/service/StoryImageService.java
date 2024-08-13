@@ -4,12 +4,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import travel.travel.apiPayload.code.status.ErrorStatus;
+import travel.travel.apiPayload.exception.handler.StoryHandler;
 import travel.travel.domain.Story;
 import travel.travel.domain.StoryImage;
-import travel.travel.jwt.service.JwtService;
 import travel.travel.repository.StoryImageRepository;
 import travel.travel.repository.StoryRepository;
-import travel.travel.repository.UserRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +27,13 @@ public class StoryImageService {
 
     private final StoryRepository storyRepository;
     private final StoryImageRepository storyImageRepository;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
 
     @Transactional
     public void create(Long storyId, List<MultipartFile> imageFiles) throws IOException {
-        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당하는 일기가 없습니다"));
+        Story story = storyRepository.findById(storyId).orElse(null);
+        if (story == null)
+            throw new StoryHandler(ErrorStatus._STORY_NOT_FOUND);
+
         if (imageFiles != null && !imageFiles.isEmpty()) {
             Path currentPath = Paths.get("").toAbsolutePath();  // 현재 작업 절대경로
             Path saveImagesPath = currentPath.resolve("saveimages"); // 현재 경로에 save_images 경로 추가
@@ -60,7 +61,10 @@ public class StoryImageService {
 
     @Transactional
     public void update(Long storyId, List<MultipartFile> imageFiles) throws IOException {
-        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당하는 일기가 없습니다"));
+        Story story = storyRepository.findById(storyId).orElse(null);
+        if (story == null)
+            throw new StoryHandler(ErrorStatus._STORY_NOT_FOUND);
+
         if (imageFiles != null && !imageFiles.isEmpty()) {
             Path currentPath = Paths.get("").toAbsolutePath();  // 현재 작업 절대경로
             Path saveImagesPath = currentPath.resolve("saveimages"); // 현재 경로에 save_images 경로 추가
@@ -102,14 +106,18 @@ public class StoryImageService {
     }
 
     public String uploadImage(Long storyId) {
-        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
+        Story story = storyRepository.findById(storyId).orElse(null);
+        if (story == null)
+            throw new StoryHandler(ErrorStatus._STORY_NOT_FOUND);
 
         String imageUrl = story.getImages().get(0).getImageUrl();
         return imageUrl.substring("/saveimages/".length());
     }
 
     public List<String> uploadImages(Long storyId) {
-        Story story = storyRepository.findById(storyId).orElseThrow(() -> new NullPointerException("해당 일기가 없습니다"));
+        Story story = storyRepository.findById(storyId).orElse(null);
+        if (story == null)
+            throw new StoryHandler(ErrorStatus._STORY_NOT_FOUND);
         List<StoryImage> images = story.getImages();
 
         List<String> fileNames = images.stream()

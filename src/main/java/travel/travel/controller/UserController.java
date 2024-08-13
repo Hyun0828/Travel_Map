@@ -20,7 +20,6 @@ public class UserController {
     @GetMapping("/info")
     public ApiResponse<UserResponse.UserInfoResponseDTO> info(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
-        System.out.println("accessToken = " + accessToken);
         UserResponse.UserInfoResponseDTO userInfoResponseDto = userService.info(accessToken);
         return ApiResponse.onSuccess(userInfoResponseDto);
     }

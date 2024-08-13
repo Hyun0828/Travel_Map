@@ -189,7 +189,7 @@ public class JwtService {
         } catch (JWTVerificationException e) {
             throw new TokenInvalidException("유효하지 않은 토큰");
         } catch (Exception e) {
-            throw new RuntimeException("토큰 검증 중 오류 발생", e);
+            throw new RuntimeException("토큰 검증 중 오류 발생" , e);
         }
     }
 
