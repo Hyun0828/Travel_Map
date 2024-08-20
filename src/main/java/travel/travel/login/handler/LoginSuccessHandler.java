@@ -16,7 +16,6 @@ import travel.travel.repository.CommonUserRepository;
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final CommonUserRepository commonUserRepository;
 
     @Value("${jwt.access.expiration}")
     private String accessTokenExpiration;

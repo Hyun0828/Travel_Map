@@ -12,18 +12,18 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * OAuthServerType의 종류에 따라 해당하는 OauthMemberClient를 사용하여 회원 객체를 생성한다.
+ * OAuthServerType의 종류에 따라 해당하는 OauthUserClient를 사용하여 회원 객체를 생성한다.
  */
 
 @Component
-public class OauthMemberClientComposite {
+public class OauthUserClientComposite {
 
-    private final Map<OauthServerType, OauthMemberClient> mapping;
+    private final Map<OauthServerType, OauthUserClient> mapping;
 
-    public OauthMemberClientComposite(Set<OauthMemberClient> clients) {
+    public OauthUserClientComposite(Set<OauthUserClient> clients) {
         mapping = clients.stream()
                 .collect(toMap(
-                        OauthMemberClient::supportServer,
+                        OauthUserClient::supportServer,
                         identity()
                 ));
     }
@@ -32,7 +32,7 @@ public class OauthMemberClientComposite {
         return getClient(oauthServerType).fetch(authCode);
     }
 
-    private OauthMemberClient getClient(OauthServerType oauthServerType) {
+    private OauthUserClient getClient(OauthServerType oauthServerType) {
         return Optional.ofNullable(mapping.get(oauthServerType))
                 .orElseThrow(() -> new RuntimeException("지원하지 않는 소셜 로그인 타입입니다."));
     }

@@ -7,13 +7,13 @@ import org.springframework.util.MultiValueMap;
 import travel.travel.domain.oauth.OauthUser;
 import travel.travel.oauth.OauthServerType;
 import travel.travel.oauth.client.GoogleApiClient;
-import travel.travel.oauth.client.OauthMemberClient;
+import travel.travel.oauth.client.OauthUserClient;
 import travel.travel.oauth.dto.GoogleMemberResponse;
 import travel.travel.oauth.dto.GoogleToken;
 
 @Component
 @RequiredArgsConstructor
-public class GoogleMemberClient implements OauthMemberClient {
+public class GoogleUserClient implements OauthUserClient {
 
     private final GoogleApiClient googleApiClient;
     private final GoogleOauthConfig googleOauthConfig;

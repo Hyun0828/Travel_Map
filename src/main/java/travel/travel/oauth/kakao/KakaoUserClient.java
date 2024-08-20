@@ -7,21 +7,20 @@ import org.springframework.util.MultiValueMap;
 import travel.travel.domain.oauth.OauthUser;
 import travel.travel.oauth.OauthServerType;
 import travel.travel.oauth.client.KakaoApiClient;
-import travel.travel.oauth.client.OauthMemberClient;
+import travel.travel.oauth.client.OauthUserClient;
 import travel.travel.oauth.dto.KakaoMemberResponse;
 import travel.travel.oauth.dto.KakaoToken;
 
 @Component
 @RequiredArgsConstructor
-
 /**
  * fetch 메소드에 대한 설명
  * (1) - authCode를 통해 token을 가져온다
  * (2) - token을 통해 회원 정보를 받아온다
- * (3) - 회원정보를 OauthMember 객체로 변환한다.
+ * (3) - 회원정보를 OauthUser 객체로 변환한다.
  */
 
-public class KakaoMemberClient implements OauthMemberClient {
+public class KakaoUserClient implements OauthUserClient {
 
     private final KakaoApiClient kakaoApiClient;
     private final KakaoOauthConfig kakaoOauthConfig;
@@ -34,8 +33,7 @@ public class KakaoMemberClient implements OauthMemberClient {
     @Override
     public OauthUser fetch(String authCode) {
         KakaoToken tokenInfo = kakaoApiClient.fetchToken(tokenRequestParams(authCode)); // (1)
-        KakaoMemberResponse kakaoMemberResponse =
-                kakaoApiClient.fetchMember("Bearer " + tokenInfo.accessToken());  // (2)
+        KakaoMemberResponse kakaoMemberResponse = kakaoApiClient.fetchMember("Bearer " + tokenInfo.accessToken());  // (2)
         return kakaoMemberResponse.toDomain();  // (3)
     }
 

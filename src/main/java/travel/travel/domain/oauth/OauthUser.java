@@ -1,6 +1,7 @@
 package travel.travel.domain.oauth;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import static lombok.AccessLevel.PROTECTED;
 @SuperBuilder
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("O")
 @Table(name = "oauth_user",
         uniqueConstraints = {

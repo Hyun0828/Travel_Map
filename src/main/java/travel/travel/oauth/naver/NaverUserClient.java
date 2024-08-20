@@ -7,13 +7,13 @@ import org.springframework.util.MultiValueMap;
 import travel.travel.domain.oauth.OauthUser;
 import travel.travel.oauth.OauthServerType;
 import travel.travel.oauth.client.NaverApiClient;
-import travel.travel.oauth.client.OauthMemberClient;
+import travel.travel.oauth.client.OauthUserClient;
 import travel.travel.oauth.dto.NaverMemberResponse;
 import travel.travel.oauth.dto.NaverToken;
 
 @Component
 @RequiredArgsConstructor
-public class NaverMemberClient implements OauthMemberClient {
+public class NaverUserClient implements OauthUserClient {
 
     private final NaverApiClient naverApiClient;
     private final NaverOauthConfig naverOauthConfig;

@@ -8,7 +8,7 @@ import travel.travel.oauth.OauthServerType;
  * AuthCode를 통해 OauthMember 객체 생성 (회원 정보 조회)
  */
 
-public interface OauthMemberClient {
+public interface OauthUserClient {
 
     OauthServerType supportServer();
 

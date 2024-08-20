@@ -9,7 +9,7 @@ import travel.travel.domain.oauth.OauthUser;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.oauth.AuthCodeRequestUrlProviderComposite;
 import travel.travel.oauth.OauthServerType;
-import travel.travel.oauth.client.OauthMemberClientComposite;
+import travel.travel.oauth.client.OauthUserClientComposite;
 import travel.travel.repository.OauthUserRepository;
 import travel.travel.repository.UserImageRepository;
 
@@ -20,14 +20,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 
 /**
- * OauthServerType을 받아서 해당 인증 서버에서 Auth Code를 받아오기 위한 URL 주소
+ * OauthServerType을 받아서 해당 인증 서버에서 Auth Code를 받아오기 위한 URL 주소 생성
  * 로그인
  */
 
 public class OauthService {
 
     private final AuthCodeRequestUrlProviderComposite authCodeRequestUrlProviderComposite;
-    private final OauthMemberClientComposite oauthMemberClientComposite;
+    private final OauthUserClientComposite oauthUserClientComposite;
     private final OauthUserRepository oauthUserRepository;
     private final UserImageRepository userImageRepository;
     private final JwtService jwtService;
@@ -37,7 +37,7 @@ public class OauthService {
     }
 
     public OauthUser login(HttpServletResponse response, OauthServerType oauthServerType, String authCode) {
-        OauthUser oauthUser = oauthMemberClientComposite.fetch(oauthServerType, authCode);
+        OauthUser oauthUser = oauthUserClientComposite.fetch(oauthServerType, authCode);
         OauthUser saved = oauthUserRepository.findByOauthId(oauthUser.getOauthId())
                 .orElseGet(() -> oauthUserRepository.save(oauthUser));
 

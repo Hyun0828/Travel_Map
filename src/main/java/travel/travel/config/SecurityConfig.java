@@ -41,7 +41,6 @@ public class SecurityConfig {
 
     private final LoginService loginService;
     private final JwtService jwtService;
-    private final CommonUserRepository commonUserRepository;
     private final RefreshRepository refreshRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
@@ -118,7 +117,7 @@ public class SecurityConfig {
      */
     @Bean
     public LoginSuccessHandler loginSuccessHandler() {
-        return new LoginSuccessHandler(jwtService, commonUserRepository);
+        return new LoginSuccessHandler(jwtService);
     }
 
     /**

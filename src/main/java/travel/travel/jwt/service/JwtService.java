@@ -38,6 +38,7 @@ public class JwtService {
     private static final String BEARER = "Bearer ";
     private final CommonUserRepository commonUserRepository;
     private final RefreshRepository refreshRepository;
+
     @Value("${jwt.secretKey}")
     private String secretKey;
     @Value("${jwt.access.expiration}")
@@ -94,7 +95,6 @@ public class JwtService {
      */
     public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
         response.setStatus(HttpServletResponse.SC_OK);
-
         setAccessTokenHeader(response, accessToken);
         setRefreshTokenCookie(response, refreshToken);
         log.info("Access Token 헤더, Refresh Token 쿠키 설정 완료");
@@ -121,8 +121,8 @@ public class JwtService {
      */
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""));
+                .filter(accessToken -> accessToken.startsWith(BEARER))
+                .map(accessToken -> accessToken.replace(BEARER, ""));
     }
 
     /**
@@ -192,16 +192,6 @@ public class JwtService {
             throw new RuntimeException("토큰 검증 중 오류 발생" , e);
         }
     }
-
-//    public boolean isTokenValid(String token) {
-//        try {
-//            JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
-//            return true;
-//        } catch (Exception e) {
-//            log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
-//            return false;
-//        }
-//    }
 
     /**
      * 쿠키 생성
