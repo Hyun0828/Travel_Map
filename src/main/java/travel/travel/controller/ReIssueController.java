@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import travel.travel.apiPayload.ApiResponse;
 import travel.travel.apiPayload.code.status.ErrorStatus;
 import travel.travel.jwt.service.JwtService;
-import travel.travel.repository.RefreshRepository;
 
 import java.util.Optional;
 
@@ -17,7 +16,7 @@ import java.util.Optional;
 public class ReIssueController {
 
     private final JwtService jwtService;
-    private final RefreshRepository refreshRepository;
+//    private final RefreshTokenRepository refreshTokenRepository;
 
     @PostMapping("/reissue")
     public ApiResponse<?> reissue(HttpServletRequest request, HttpServletResponse response) {
@@ -35,11 +34,15 @@ public class ReIssueController {
         }
 
         // 블랙리스트 여부 검사 (DB에 저장되어 있는지)
-        if (!refreshRepository.existsByRefresh(refreshToken.get()))
+//        if (!refreshTokenRepository.existsByRefresh(refreshToken.get()))
+//            return ApiResponse.onFailure(ErrorStatus._REFRESHTOKEN_BLACKLIST.getCode(), ErrorStatus._REFRESHTOKEN_BLACKLIST.getMessage(), null);
+
+        if (jwtService.isBlackList(refreshToken.get()))
             return ApiResponse.onFailure(ErrorStatus._REFRESHTOKEN_BLACKLIST.getCode(), ErrorStatus._REFRESHTOKEN_BLACKLIST.getMessage(), null);
 
         // 새로운 accessToken, refreshToken 발급
-        String email = refreshRepository.findByRefresh(refreshToken.get()).get().getEmail();
+//        String email = refreshTokenRepository.findByRefresh(refreshToken.get()).get().getEmail();
+        String email = jwtService.getEmail(refreshToken.get());
         String new_accessToken = jwtService.createAccessToken(email); // JwtService의 createAccessToken을 사용하여 AccessToken 발급
         String new_refreshToken = jwtService.createRefreshToken(); // JwtService의 createRefreshToken을 사용하여 RefreshToken 발급
 

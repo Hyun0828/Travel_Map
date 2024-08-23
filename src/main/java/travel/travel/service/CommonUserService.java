@@ -14,7 +14,6 @@ import travel.travel.dto.user.CommonUserResponse;
 import travel.travel.jwt.service.JwtService;
 import travel.travel.mapper.CommonUserMapper;
 import travel.travel.repository.CommonUserRepository;
-import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserImageRepository;
 import travel.travel.repository.UserRepository;
 
@@ -26,7 +25,7 @@ import java.util.Optional;
 public class CommonUserService {
 
     private final JwtService jwtService;
-    private final RefreshRepository refreshRepository;
+    //    private final RefreshTokenRepository refreshTokenRepository;
     private final CommonUserRepository commonUserRepository;
     private final UserRepository userRepository;
     private final UserImageRepository userImageRepository;
@@ -34,7 +33,7 @@ public class CommonUserService {
 
     public CommonUserResponse.CommonUserIdResponseDTO signUp(CommonUserRequest.CommonUserSignUpRequestDTO commonUserSignUpRequestDto) {
         User user = userRepository.findByEmail(commonUserSignUpRequestDto.getEmail()).orElse(null);
-        if(user != null)
+        if (user != null)
             throw new UserHandler(ErrorStatus._USER_DUPLICATED);
 
         CommonUser commonUser = CommonUserMapper.toCommonUserFromCommonUserSignUpRequestDto(commonUserSignUpRequestDto);
@@ -59,7 +58,7 @@ public class CommonUserService {
         Optional<String> email = jwtService.extractEmail(accessToken);
         if (email.isPresent()) {
             commonUserRepository.deleteByEmail(email.get());
-            refreshRepository.deleteAllByEmail(email.get());
+//            refreshTokenRepository.deleteAllByEmail(email.get());
         }
     }
 }

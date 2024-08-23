@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.GenericFilterBean;
 import travel.travel.jwt.service.JwtService;
-import travel.travel.repository.RefreshRepository;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -22,7 +21,6 @@ import java.util.Optional;
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JwtService jwtService;
-    private final RefreshRepository refreshRepository;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -60,19 +58,19 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-//        if (!jwtService.isTokenValid(refreshToken.get())) {
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // token이 블랙리스트인지 확인
+//        if (!refreshTokenRepository.existsByRefresh(refreshToken.get())) {
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 //            return;
 //        }
-
-        // token이 블랙리스트인지 확인
-        if (!refreshRepository.existsByRefresh(refreshToken.get())) {
+        if (jwtService.isBlackList(refreshToken.get())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         // 로그아웃 진행 : DB에서 refreshToken 삭제
-        refreshRepository.deleteByRefresh(refreshToken.get());
+//        refreshTokenRepository.deleteByRefresh(refreshToken.get());
+        jwtService.deleteRefreshToken(refreshToken.get());
 
         // Cookie에서 refreshToken 값을 0으로 변경
         Cookie cookie = new Cookie(jwtService.getRefreshHeader(), null);

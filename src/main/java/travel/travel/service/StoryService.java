@@ -11,7 +11,6 @@ import travel.travel.dto.story.StoryRequest;
 import travel.travel.dto.story.StoryResponse;
 import travel.travel.mapper.StoryMapper;
 import travel.travel.repository.StoryRepository;
-import travel.travel.repository.WritingRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

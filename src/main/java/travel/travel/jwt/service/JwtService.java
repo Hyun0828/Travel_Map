@@ -12,15 +12,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import travel.travel.domain.RefreshToken;
 import travel.travel.exception.TokenInvalidException;
 import travel.travel.repository.CommonUserRepository;
-import travel.travel.repository.RefreshRepository;
 
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,9 @@ public class JwtService {
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
     private final CommonUserRepository commonUserRepository;
-    private final RefreshRepository refreshRepository;
+//    private final RefreshTokenRepository refreshTokenRepository;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${jwt.secretKey}")
     private String secretKey;
@@ -164,19 +167,48 @@ public class JwtService {
      * 기존 RefreshToken DB에서 삭제
      */
     public void deleteRefreshToken(String refreshToken) {
-        if (refreshRepository.existsByRefresh(refreshToken))
-            refreshRepository.deleteByRefresh(refreshToken);
+//        if (refreshTokenRepository.existsByRefresh(refreshToken))
+//            refreshTokenRepository.deleteByRefresh(refreshToken);
+        redisTemplate.delete(refreshToken);
     }
 
     /**
      * RefreshToken DB 저장(업데이트) - Redis가 아닌 새로운 Table에 저장
      */
     public void updateRefreshToken(String email, String refreshToken) {
-        refreshRepository.save(RefreshToken.builder()
+//        refreshTokenRepository.save(RefreshToken.builder()
+//                .email(email)
+//                .refresh(refreshToken)
+//                .expiration(refreshTokenExpirationPeriod)
+//                .build());
+
+        RefreshToken token = RefreshToken.builder()
                 .email(email)
                 .refresh(refreshToken)
                 .expiration(refreshTokenExpirationPeriod)
-                .build());
+                .build();
+
+        // refreshToken을 key-value로 Redis에 저장한다.
+        redisTemplate.opsForValue().set(refreshToken, token, (long) refreshTokenExpirationPeriod, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Redis에 RefreshToken이 잘 저장되어 있는지 확인한다.
+     */
+    public boolean isBlackList(String refreshToken) {
+        RefreshToken token = (RefreshToken) redisTemplate.opsForValue().get(refreshToken);
+        return token == null;
+    }
+
+    /**
+     * RefreshToken으로부터 회원 정보(email) 가져오기
+     */
+    public String getEmail(String refreshToken) {
+        RefreshToken token = (RefreshToken) redisTemplate.opsForValue().get(refreshToken);
+        if (token != null)
+            return token.getEmail();
+        else
+            return null;
     }
 
     /**
@@ -189,7 +221,7 @@ public class JwtService {
         } catch (JWTVerificationException e) {
             throw new TokenInvalidException("유효하지 않은 토큰");
         } catch (Exception e) {
-            throw new RuntimeException("토큰 검증 중 오류 발생" , e);
+            throw new RuntimeException("토큰 검증 중 오류 발생", e);
         }
     }
 

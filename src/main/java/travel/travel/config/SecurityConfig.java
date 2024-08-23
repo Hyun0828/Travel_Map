@@ -24,8 +24,6 @@ import travel.travel.login.handler.LoginFailureHandler;
 import travel.travel.login.handler.LoginSuccessHandler;
 import travel.travel.login.service.LoginService;
 import travel.travel.logout.filter.CustomLogoutFilter;
-import travel.travel.repository.CommonUserRepository;
-import travel.travel.repository.RefreshRepository;
 import travel.travel.repository.UserRepository;
 
 import java.util.Arrays;
@@ -41,7 +39,7 @@ public class SecurityConfig {
 
     private final LoginService loginService;
     private final JwtService jwtService;
-    private final RefreshRepository refreshRepository;
+    //    private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
@@ -53,7 +51,7 @@ public class SecurityConfig {
                 .logout(config -> config.disable())    // logout 사용 X
                 .httpBasic(config -> config.disable()) // httpBasic 사용 X
                 .csrf(config -> config.disable()) // csrf 보안 사용 X
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+//                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())) // h2 사용하면 필요하다.
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests ->
@@ -152,7 +150,7 @@ public class SecurityConfig {
 
     @Bean
     public CustomLogoutFilter customLogoutFilter() {
-        CustomLogoutFilter customLogoutFilter = new CustomLogoutFilter(jwtService, refreshRepository);
+        CustomLogoutFilter customLogoutFilter = new CustomLogoutFilter(jwtService);
         return customLogoutFilter;
     }
 }

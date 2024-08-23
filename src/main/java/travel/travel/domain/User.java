@@ -17,11 +17,6 @@ import java.time.LocalDate;
 @SuperBuilder
 public abstract class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
-
     @Column(unique = true)
     protected String email;
     protected String name;
@@ -29,7 +24,10 @@ public abstract class User extends BaseEntity {
     protected String gender;
     protected Integer age;
     protected String location;
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long id;
     @Enumerated(EnumType.STRING)
     private Role role;
 

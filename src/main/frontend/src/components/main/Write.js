@@ -25,10 +25,10 @@ const Write = () => {
             try {
                 const response = await instance.get('http://localhost:8080/naver/search', {
                     params: {text},
-                    headers: {
-                        "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
-                        "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET
-                    }
+                    // headers: {
+                    //     "X-Naver-Client-Id": process.env.REACT_APP_NAVER_CLIENT_ID,
+                    //     "X-Naver-Client-Secret": process.env.REACT_APP_NAVER_CLIENT_SECRET
+                    // }
                 });
                 if (response.data.isSuccess) {
                     const result = JSON.parse(response.data.result); // JSON 파싱

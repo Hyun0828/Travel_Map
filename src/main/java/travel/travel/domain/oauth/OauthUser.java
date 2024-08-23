@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import travel.travel.domain.User;
 
-import static lombok.AccessLevel.PROTECTED;
-
 @Entity
 @SuperBuilder
 @Getter
