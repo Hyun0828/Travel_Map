@@ -38,7 +38,6 @@ public class JwtService {
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
     private final CommonUserRepository commonUserRepository;
-//    private final RefreshTokenRepository refreshTokenRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
